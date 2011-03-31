@@ -8,6 +8,8 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Insets;
 import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -65,6 +67,7 @@ public class ProxyGUI extends JFrame
 	protected JComboBox cameraip = null;
 	protected JList cameralist = null;
 	private JButton save = null;
+	private JButton delete = null;
 	private JButton saveserver = null;
 	private JButton download = null;
 	private JButton uploadlocal = null;
@@ -105,6 +108,12 @@ public class ProxyGUI extends JFrame
 	private JLabel botid_label = null;
 	private JLabel verboselog_label = null;
 	private JLabel statuslog_label = null;
+	private JLabel scalefactor_label = null;
+	private JLabel sourcefps_label = null;
+	private JLabel sourceprotocol_label = null;
+	private JLabel botprotocol_label = null;
+	private JLabel sourcetype_label = null;
+	private JLabel bottype_label = null;
 	protected JTextField max_connections = null;
 	protected String default_maxconnect = "100"; 
 	protected JTextField sourceip = null;
@@ -130,6 +139,11 @@ public class ProxyGUI extends JFrame
 	protected String default_botid = ""; 
 	boolean added = false;
 	protected JComboBox scalefactor = null;
+	protected JComboBox sourcefps = null;
+	protected JComboBox sourceprotocol = null;
+	protected JComboBox botprotocol = null;
+	protected JComboBox sourcetype = null;
+	protected JComboBox bottype = null;
 
 	public ProxyGUI() 
 	{
@@ -141,7 +155,7 @@ public class ProxyGUI extends JFrame
 	
 	void initialize() 
 	 {
-		this.setSize(680,375);
+		this.setSize(740,375);
 		this.setContentPane(getJContentPane());
 		this.setTitle("FlexTPS Proxy Editor");
 		
@@ -208,11 +222,18 @@ public class ProxyGUI extends JFrame
 			main_window.add(getJLabel12(), null);
 			main_window.add(getJLabel13(), null);
 			main_window.add(getJLabel14(), null);
+			main_window.add(getJLabel15(), null);
+			main_window.add(getJLabel16(), null);
+			main_window.add(getJLabel17(), null);
+			main_window.add(getJLabel18(), null);
+			main_window.add(getJLabel19(), null);
+			main_window.add(getJLabel20(), null);
 			main_window.add(getJButton1(), null);
 			main_window.add(getJButton2(), null);
 			main_window.add(getJButton3(), null);
 			main_window.add(getJButton4(), null);
 			main_window.add(getJButton5(), null);
+			main_window.add(getJButton6(), null);
 			main_window.add(getCheckBox(), null);
 			main_window.add(getCheckBox2(), null);
 			main_window.add(getCheckBox3(), null);
@@ -229,6 +250,11 @@ public class ProxyGUI extends JFrame
 			main_window.add(getTextField9(),null);
 			main_window.add(getTextField10(),null);
 			main_window.add(getJcombobox(),null);
+			main_window.add(getJcombobox1(),null);
+			main_window.add(getJcombobox2(),null);
+			main_window.add(getJcombobox3(),null);
+			main_window.add(getJcombobox4(),null);
+			main_window.add(getJcombobox5(),null);
 		}
 		return main_window;
 	}
@@ -259,11 +285,27 @@ public class ProxyGUI extends JFrame
 						sourceid.setEnabled(true);
 						sourcewidth.setEnabled(true);
 						sourceheight.setEnabled(true);
-						botip.setEnabled(true);
-						botport.setEnabled(true);
-						botid.setEnabled(true);
 						verb_log.setEnabled(true);
 						stat_log.setEnabled(true);
+						scalefactor.setEnabled(true);
+						sourcefps.setEnabled(true);
+						sourceprotocol.setEnabled(true);
+						sourcetype.setEnabled(true);
+						bottype.setEnabled(true);
+						if(!proxy.proxies.get(place).bot_type.isEmpty())
+						{
+							botprotocol.setEnabled(true);
+							botip.setEnabled(true);
+							botport.setEnabled(true);
+							botid.setEnabled(true);
+						}
+						if(proxy.proxies.get(place).bot_type.isEmpty())
+						{
+							botprotocol.setEnabled(false);
+							botip.setEnabled(false);
+							botport.setEnabled(false);
+							botid.setEnabled(false);
+						}
 						if(proxy.proxies.get(place).persis.contentEquals("true"))
 							pers_true.setSelected(true);	
 						else
@@ -315,10 +357,115 @@ public class ProxyGUI extends JFrame
 							botid.setText(proxy.proxies.get(place).bot_id);
 						else 
 							botid.setText("");
+						if(proxy.proxies.get(place).scale_factor.isEmpty())
+							scalefactor.setSelectedIndex(0);
+						else if(!proxy.proxies.get(place).scale_factor.isEmpty())
+						{
+							if(proxy.proxies.get(place).scale_factor.matches("0.5"))
+								scalefactor.setSelectedIndex(1);
+							else if(proxy.proxies.get(place).scale_factor.matches("0.25"))
+								scalefactor.setSelectedIndex(2);	
+							else if(proxy.proxies.get(place).scale_factor.matches("0.125"))
+								scalefactor.setSelectedIndex(3);
+						}
+						if(proxy.proxies.get(place).source_fps.isEmpty())
+							sourcefps.setSelectedIndex(0);
+						else if(!proxy.proxies.get(place).source_fps.isEmpty())
+						{
+							if(proxy.proxies.get(place).source_fps.matches("1"))
+								sourcefps.setSelectedIndex(1);
+							else if(proxy.proxies.get(place).source_fps.matches("2"))
+								sourcefps.setSelectedIndex(2);
+							else if(proxy.proxies.get(place).source_fps.matches("3"))
+								sourcefps.setSelectedIndex(3);
+							else if(proxy.proxies.get(place).source_fps.matches("4"))
+								sourcefps.setSelectedIndex(4);
+							else if(proxy.proxies.get(place).source_fps.matches("5"))
+								sourcefps.setSelectedIndex(5);
+							else if(proxy.proxies.get(place).source_fps.matches("6"))
+								sourcefps.setSelectedIndex(6);
+							else if(proxy.proxies.get(place).source_fps.matches("7"))
+								sourcefps.setSelectedIndex(7);
+							else if(proxy.proxies.get(place).source_fps.matches("8"))
+								sourcefps.setSelectedIndex(8);
+							else if(proxy.proxies.get(place).source_fps.matches("9"))
+								sourcefps.setSelectedIndex(9);
+							else if(proxy.proxies.get(place).source_fps.matches("10"))
+								sourcefps.setSelectedIndex(10);
+							else if(proxy.proxies.get(place).source_fps.matches("15"))
+								sourcefps.setSelectedIndex(11);
+							else if(proxy.proxies.get(place).source_fps.matches("20"))
+								sourcefps.setSelectedIndex(12);
+							else if(proxy.proxies.get(place).source_fps.matches("25"))
+								sourcefps.setSelectedIndex(13);
+							else if(proxy.proxies.get(place).source_fps.matches("30"))
+								sourcefps.setSelectedIndex(14);
+						}
+						if(proxy.proxies.get(place).source_protocol.isEmpty())
+							sourceprotocol.setSelectedIndex(0);
+						else if(!proxy.proxies.get(place).source_protocol.isEmpty())
+						{
+							if(proxy.proxies.get(place).source_protocol.matches("http"))
+								sourceprotocol.setSelectedIndex(1);
+							else if(proxy.proxies.get(place).source_protocol.matches("https"))
+								sourceprotocol.setSelectedIndex(2);
+						}
+						if(proxy.proxies.get(place).bot_protocol.isEmpty())
+							botprotocol.setSelectedIndex(0);
+						else if(!proxy.proxies.get(place).bot_protocol.isEmpty())
+						{
+							if(proxy.proxies.get(place).bot_protocol.matches("http"))
+								botprotocol.setSelectedIndex(1);
+							else if(proxy.proxies.get(place).bot_protocol.matches("https"))
+								botprotocol.setSelectedIndex(2);
+						}
+						if(proxy.proxies.get(place).source_type.isEmpty())
+							sourcetype.setSelectedIndex(0);
+						else if(!proxy.proxies.get(place).source_type.isEmpty())
+						{
+							if(proxy.proxies.get(place).source_type.matches("flexTPS::proxy"))
+								sourcetype.setSelectedIndex(1);
+							else if(proxy.proxies.get(place).source_type.matches("flexTPS::REST"))
+								sourcetype.setSelectedIndex(2);
+							else if(proxy.proxies.get(place).source_type.matches("Axis::Type1"))
+								sourcetype.setSelectedIndex(3);
+							else if(proxy.proxies.get(place).source_type.matches("Axis::Type2"))
+								sourcetype.setSelectedIndex(4);
+							else if(proxy.proxies.get(place).source_type.matches("Sony::SNCRZ30N"))
+								sourcetype.setSelectedIndex(5);
+							else if(proxy.proxies.get(place).source_type.matches("DLink::DCS900"))
+								sourcetype.setSelectedIndex(6);
+						}
+						if(proxy.proxies.get(place).bot_type.isEmpty())
+							bottype.setSelectedIndex(0);
+						else if(!proxy.proxies.get(place).bot_type.isEmpty())
+						{
+							if(proxy.proxies.get(place).bot_type.matches("flexTPS::proxy"))
+								bottype.setSelectedIndex(1);
+							else if(proxy.proxies.get(place).bot_type.matches("flexTPS::REST"))
+								bottype.setSelectedIndex(2);
+							else if(proxy.proxies.get(place).bot_type.matches("Axis::Type1"))
+								bottype.setSelectedIndex(3);
+							else if(proxy.proxies.get(place).bot_type.matches("Axis::Type2"))
+								bottype.setSelectedIndex(4);
+							else if(proxy.proxies.get(place).bot_type.matches("Sony::SNCRZ30N"))
+								bottype.setSelectedIndex(5);
+						}
 					}
 				}});				
 		}
 		return jsp;
+	}
+	
+	//label for scale factor
+	private JLabel getJLabel15() 
+	{
+		if (scalefactor_label == null) {
+			scalefactor_label = new JLabel();
+			scalefactor_label.setText("Scale-factor:");
+			scalefactor_label.setBounds(new Rectangle(150, 225, 284, 16));
+		}
+		return scalefactor_label;
 	}
 	
 	//scale factor combobox 
@@ -328,9 +475,152 @@ public class ProxyGUI extends JFrame
 		{
 			String [] scale = {"","0.5","0.25","0.125"};
 			scalefactor = new JComboBox(scale);
-			scalefactor.setBounds(new Rectangle(122,225,100,16));
+			scalefactor.setBounds(new Rectangle(225,225,60,16));
+			scalefactor.setEnabled(false);
 		}
 		return scalefactor;
+	}
+	
+	//jlabel for source fps
+	private JLabel getJLabel16() 
+	{
+		if (sourcefps_label == null) {
+			sourcefps_label = new JLabel();
+			sourcefps_label.setText("Source-fps:");
+			sourcefps_label.setBounds(new Rectangle(295, 225, 284, 16));
+		}
+		return sourcefps_label;
+	}
+	
+	//sourcefps combobox 
+	public JComboBox getJcombobox1()
+	{
+		if(sourcefps == null)
+		{
+			String [] scale = {"","1","2","3","4","5","6","7","8","9","10","15","20","25","30"};
+			sourcefps = new JComboBox(scale);
+			sourcefps.setBounds(new Rectangle(365,225,45,16));
+			sourcefps.setEnabled(false);
+		}
+		return sourcefps;
+	}
+	
+	//jlabel for source protocol
+	private JLabel getJLabel17() 
+	{
+		if (sourceprotocol_label == null) {
+			sourceprotocol_label = new JLabel();
+			sourceprotocol_label.setText("Source-protocol:");
+			sourceprotocol_label.setBounds(new Rectangle(420, 225, 284, 16));
+		}
+		return sourceprotocol_label;
+	}
+	
+	//sourceprotocol combobox
+	public JComboBox getJcombobox2()
+	{
+		if(sourceprotocol == null)
+		{
+			String [] scale = {"","http","https"};
+			sourceprotocol = new JComboBox(scale);
+			sourceprotocol.setBounds(new Rectangle(518,225,60,20));
+			sourceprotocol.setEnabled(false);
+		}
+		return sourceprotocol;
+	}
+	
+	//label for robot protocol
+	private JLabel getJLabel19() 
+	{
+		if (botprotocol_label == null) {
+			botprotocol_label = new JLabel();
+			botprotocol_label.setText("Robotic-protocol:");
+			botprotocol_label.setBounds(new Rectangle(510, 150, 284, 16));
+		}
+		return botprotocol_label;
+	}
+	
+	//botprotocol combobox
+	public JComboBox getJcombobox3()
+	{
+		if(botprotocol == null)
+		{
+			String [] scale = {"","http","https"};
+			botprotocol = new JComboBox(scale);
+			botprotocol.setBounds(new Rectangle(610,150,60,20));
+			botprotocol.setEnabled(false);
+		}
+		return botprotocol;
+	}
+	
+	//label for sourcetype
+	private JLabel getJLabel18() 
+	{
+		if (sourcetype_label == null) {
+			sourcetype_label = new JLabel();
+			sourcetype_label.setText("Source-type:");
+			sourcetype_label.setBounds(new Rectangle(495, 80, 284, 16));
+		}
+		return sourcetype_label;
+	}
+	
+	//sourcetype combobox
+	public JComboBox getJcombobox4()
+	{
+		if(sourcetype == null)
+		{
+			String [] scale = {"","flexTPS::proxy","flexTPS::REST","Axis::Type1","Axis::Type2","Sony::SNCRZ30N","DLink::DCS900"};
+			sourcetype = new JComboBox(scale);
+			sourcetype.setBounds(new Rectangle(570,80,130,20));
+			sourcetype.setEnabled(false);
+		}
+		return sourcetype;
+	}
+	
+	//label for robot type
+	private JLabel getJLabel20() 
+	{
+		if (bottype_label == null) {
+			bottype_label = new JLabel();
+			bottype_label.setText("Robotic-type:");
+			bottype_label.setBounds(new Rectangle(510, 185, 284, 16));
+		}
+		return bottype_label;
+	}
+	
+	//robotictype combobox
+	public JComboBox getJcombobox5()
+	{
+		if(bottype == null)
+		{
+			String [] scale = {"","flexTPS::proxy","flexTPS::REST","Axis::Type1","Axis::Type2","Sony::SNCRZ30N"};
+			bottype = new JComboBox(scale);
+			bottype.setBounds(new Rectangle(587,185,130,20));
+			bottype.setEnabled(false);
+			bottype.addActionListener(new ActionListener() {public void actionPerformed(ActionEvent actionEvent) 
+			{
+				 enableBotscontrols();
+			}});
+		}
+		return bottype;
+	}
+	
+	private void enableBotscontrols()
+	{
+		if(bottype.getSelectedIndex() != 0)
+		{
+			botprotocol.setEnabled(true);
+			botip.setEnabled(true);
+			botport.setEnabled(true);
+			botid.setEnabled(true);
+		}
+		else 
+		{
+			botprotocol.setEnabled(false);
+			botip.setEnabled(false);
+			botport.setEnabled(false);
+			botid.setEnabled(false);
+		}
 	}
 	
 	//label for persistants 
@@ -691,15 +981,31 @@ public class ProxyGUI extends JFrame
 						proxy.proxies.get(selected).source_width = sourcewidth.getText();
 					if(!sourceheight.getText().isEmpty())
 						proxy.proxies.get(selected).source_height = sourceheight.getText();
-					if(!botip.getText().isEmpty())
-						proxy.proxies.get(selected).bot_ip = botip.getText();
-					if(!botport.getText().isEmpty())
-						proxy.proxies.get(selected).bot_port = botport.getText();
-					if(!botid.getText().isEmpty())
-						proxy.proxies.get(selected).bot_id = botid.getText();
-					System.out.println("Before Clear " + proxy.proxies.size());
+					proxy.proxies.get(selected).scale_factor = (String) scalefactor.getSelectedItem();
+					proxy.proxies.get(selected).source_fps = (String) sourcefps.getSelectedItem();
+					proxy.proxies.get(selected).source_protocol = (String) sourceprotocol.getSelectedItem();
+					proxy.proxies.get(selected).source_type = (String) sourcetype.getSelectedItem();
+					proxy.proxies.get(selected).bot_type = (String) bottype.getSelectedItem();
+					if(bottype.getSelectedIndex() != 0)
+					{
+						proxy.proxies.get(selected).bot_protocol = (String) botprotocol.getSelectedItem();
+						if(!botid.getText().isEmpty())
+							proxy.proxies.get(selected).bot_id = botid.getText();
+						if(!botip.getText().isEmpty())
+							proxy.proxies.get(selected).bot_ip = botip.getText();
+						if(!botport.getText().isEmpty())
+							proxy.proxies.get(selected).bot_port = botport.getText();
+					}
+					else
+					{
+						proxy.proxies.get(selected).bot_protocol = "";
+						proxy.proxies.get(selected).bot_id = "";
+						proxy.proxies.get(selected).bot_ip = "";
+						proxy.proxies.get(selected).bot_port = "";
+					}
+					//System.out.println("Before Clear " + proxy.proxies.size());
 					//proxyListModel.clear();
-					System.out.println("After Clear " + proxy.proxies.size());
+					//System.out.println("After Clear " + proxy.proxies.size());
 					//for(int i = 0; i < proxy.proxies.size(); i++)
 					//{
 						//proxyListModel.addElement(proxy.proxies.get(i).source_ip);
@@ -803,7 +1109,7 @@ public class ProxyGUI extends JFrame
 				public void mousePressed(java.awt.event.MouseEvent e) 
 				{
 					
-					proxy.camera = new FlexTPSCamera(); //adds the new element to the array list
+					proxy.camera = new FlexTPSCamera(); 
 					proxyListModel.addElement("000.000.00.00");		
 					if(added == false)
 					{
@@ -816,11 +1122,36 @@ public class ProxyGUI extends JFrame
 					added = true;
 					port_num = Integer.toString(high_port);
 					proxy.camera.port = port_num;
+					port_nums.add(port_num);
 					proxy.proxies.add(proxy.camera);		
 				}
 			});
 		}
 		return add;
+	}
+	
+	//button to delete from xml file
+	private JButton getJButton6() 
+	{
+		if (delete == null) 
+		{
+			delete = new JButton();
+			delete.setBounds(new Rectangle(15, 190, 93, 25));
+			delete.setText("Delete");
+			delete.addMouseListener(new java.awt.event.MouseAdapter() 
+			{
+				public void mousePressed(java.awt.event.MouseEvent e) 
+				{
+					int indexSelected = cameralist.getSelectedIndex();
+					proxyListModel.remove(indexSelected);
+					String selectedPort = proxy.proxies.get(indexSelected).port;
+					proxy.proxies.remove(indexSelected);
+					port_nums.remove(selectedPort);
+					cameralist.setSelectedIndex(0);
+				}
+			});
+		}
+		return delete;
 	}
 	
 	//prints out message if combobox is already filled
@@ -1150,7 +1481,7 @@ class FlexTPSProxy
              FileOutputStream fileOut = new FileOutputStream(fname);
              PrintStream oos = new PrintStream (fileOut);
              oos.println("<proxies>");
-             for(int i = 0; i < proxy.getLength();i++)
+             for(int i = 0; i < proxies.size();i++)
             	 proxies.get(i).print(oos);
              oos.println("</proxies>");
              oos.close();
