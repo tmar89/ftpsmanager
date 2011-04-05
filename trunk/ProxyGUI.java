@@ -12,6 +12,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -144,6 +145,10 @@ public class ProxyGUI extends JFrame
 	protected JComboBox botprotocol = null;
 	protected JComboBox sourcetype = null;
 	protected JComboBox bottype = null;
+	private JOptionPane already_port = null;
+	private JOptionPane confirm;
+	JOptionPane redownload;
+	public int yes = 0;
 
 	public ProxyGUI() 
 	{
@@ -292,6 +297,9 @@ public class ProxyGUI extends JFrame
 						sourceprotocol.setEnabled(true);
 						sourcetype.setEnabled(true);
 						bottype.setEnabled(true);
+						int indexSelected = cameralist.getSelectedIndex();
+						if(indexSelected == -1)
+							return;
 						if(!proxy.proxies.get(place).bot_type.isEmpty())
 						{
 							botprotocol.setEnabled(true);
@@ -952,7 +960,20 @@ public class ProxyGUI extends JFrame
 				public void mouseClicked(java.awt.event.MouseEvent e) 
 				{
 					int selected = cameralist.getSelectedIndex();
-					System.out.println("index: " + selected);
+					if(selected == -1)
+						return;
+					int t = Integer.parseInt(ports.getText().toString());
+					int count = 1;
+					for(int i = 0; i < proxy.proxies.size(); i++)
+					{
+						if(proxy.proxies.get(i).port.matches(ports.getText()) && i != selected)
+						{
+							already_port = new JOptionPane();
+							already_port.setSize(new Dimension(119, 69));
+							JOptionPane.showMessageDialog(already_port, "Already used port");
+								return;
+						}
+					}
 					proxy.proxies.get(selected).port = ports.getText();
 					if(pers_true.isSelected())
 						proxy.proxies.get(selected).persis = "true";
@@ -1003,14 +1024,14 @@ public class ProxyGUI extends JFrame
 						proxy.proxies.get(selected).bot_ip = "";
 						proxy.proxies.get(selected).bot_port = "";
 					}
-					//System.out.println("Before Clear " + proxy.proxies.size());
-					//proxyListModel.clear();
-					//System.out.println("After Clear " + proxy.proxies.size());
-					//for(int i = 0; i < proxy.proxies.size(); i++)
-					//{
-						//proxyListModel.addElement(proxy.proxies.get(i).source_ip);
-						//System.out.println(proxy.proxies.get(i));
-					//}
+					boolean current_port_nums = port_nums.add(ports.getText());
+					Collections.sort(port_nums);
+					high_port = port_nums.lastIndexOf(port_nums);
+					proxyListModel.clear();
+					for(int i = 0; i < proxy.proxies.size(); i++)
+					{
+						proxyListModel.addElement(proxy.proxies.get(i).port);
+					}
 				}
 			});
 		}
@@ -1025,6 +1046,30 @@ public class ProxyGUI extends JFrame
 			saveserver = new JButton();
 			saveserver.setBounds(new Rectangle(337, 275, 130, 25));
 			saveserver.setText("Save to Server");
+			saveserver.addMouseListener(new java.awt.event.MouseAdapter() 
+			{
+				public void mouseClicked(java.awt.event.MouseEvent e) 
+				{
+							confirm = new JOptionPane();
+							confirm.setSize(new Dimension(119, 69));
+							yes = JOptionPane.showConfirmDialog(confirm,"Upload " + "file" +"?","Upload",JOptionPane.YES_NO_OPTION);
+						if(yes == JOptionPane.YES_OPTION)
+						{
+						try
+					{
+					    String sys_path = "/home/jgr208";
+						proxy.uploadBack("/proxies/etc","proxies.xml");
+					}
+						catch(Exception e1)
+						 {
+							failed = new JOptionPane();
+							failed.setSize(new Dimension(119, 69));
+							JOptionPane.showMessageDialog(failed, "Failed to upload file " + "file");
+							System.out.println(e1);
+						 }
+			}
+				}
+			});
 		}
 		return saveserver;
 	}
@@ -1110,20 +1155,22 @@ public class ProxyGUI extends JFrame
 				{
 					
 					proxy.camera = new FlexTPSCamera(); 
-					proxyListModel.addElement("000.000.00.00");		
-					if(added == false)
+					if(port_nums.isEmpty())
+					{
+						port_num = "3000";
+						high_port = Integer.parseInt(port_num);
+					}
+					else
 					{
 						port_num = port_nums.get(port_nums.size()-1).toString();
 						high_port = Integer.parseInt(port_num);
 						high_port++;
 					}
-					else
-						high_port++;
-					added = true;
 					port_num = Integer.toString(high_port);
+					proxyListModel.addElement(port_num);
 					proxy.camera.port = port_num;
 					port_nums.add(port_num);
-					proxy.proxies.add(proxy.camera);		
+					proxy.proxies.add(proxy.camera);	
 				}
 			});
 		}
@@ -1143,11 +1190,44 @@ public class ProxyGUI extends JFrame
 				public void mousePressed(java.awt.event.MouseEvent e) 
 				{
 					int indexSelected = cameralist.getSelectedIndex();
-					proxyListModel.remove(indexSelected);
-					String selectedPort = proxy.proxies.get(indexSelected).port;
-					proxy.proxies.remove(indexSelected);
-					port_nums.remove(selectedPort);
-					cameralist.setSelectedIndex(0);
+					if(indexSelected == -1)
+						return;
+					else 
+					{
+						for(int i = 0; i < port_nums.size(); i++)
+						{
+							if(port_nums.get(i).equals(proxy.proxies.get(indexSelected).port))
+							{
+								port_nums.remove(i);
+							}
+						}
+						proxyListModel.remove(indexSelected);
+						proxy.proxies.remove(indexSelected);
+						proxyListModel.clear();
+						for (int i = 0; i < proxy.proxies.size(); i++)
+						{
+							proxyListModel.addElement(proxy.proxies.get(i).port);
+						}	
+						Collections.sort(port_nums);
+						high_port = port_nums.lastIndexOf(port_nums);
+						pers_true.setEnabled(false);
+						exit_fail.setEnabled(false);
+						ports.setEnabled(false);
+						ips.setEnabled(false);
+						max_connections.setEnabled(false);
+						sourceip.setEnabled(false);
+						sourceport.setEnabled(false);
+						sourceid.setEnabled(false);
+						sourcewidth.setEnabled(false);
+						sourceheight.setEnabled(false);
+						verb_log.setEnabled(false);
+						stat_log.setEnabled(false);
+						scalefactor.setEnabled(false);
+						sourcefps.setEnabled(false);
+						sourceprotocol.setEnabled(false);
+						sourcetype.setEnabled(false);
+						bottype.setEnabled(false);
+					}
 				}
 			});
 		}
@@ -1157,9 +1237,22 @@ public class ProxyGUI extends JFrame
 	//prints out message if combobox is already filled
 	void already()
 	{
-		already_downloaded = new JOptionPane();
-		already_downloaded.setSize(new Dimension(119, 69));
-		JOptionPane.showMessageDialog(already_downloaded, "Already downloaded file");
+		//already_downloaded = new JOptionPane();
+		//already_downloaded.setSize(new Dimension(119, 69));
+		//JOptionPane.showMessageDialog(already_downloaded, "Already downloaded file");
+		//code below fails when redownloading xml file
+	    proxyListModel.clear();
+			try 
+			{
+				proxy.sys_path = "/home/jgr208";
+				proxy.getFile("/proxies/etc","proxies.xml");
+			} 
+			catch(Exception e1)
+			 {
+				failed = new JOptionPane();
+				failed.setSize(new Dimension(119, 69));
+				JOptionPane.showMessageDialog(failed, "Failed to download file " + proxy.remotefile);
+			 }
 	}
 }
 
@@ -1306,6 +1399,7 @@ class FlexTPSProxy
 	protected String extension = "xml";
 	String localFile;
 	public ProxyGUI gui;
+	protected String path;
 
 	//constructor
 	public FlexTPSProxy()
@@ -1349,8 +1443,135 @@ class FlexTPSProxy
 	public void add()
 	{
 		if(gui.downloaded == true)
-			//calls this method in gui so they do not fill combobox multiple times.
-			gui.already();
+		{
+			gui.redownload = new JOptionPane();
+			gui.redownload.setSize(new Dimension(119, 69));
+			gui.yes = JOptionPane.showConfirmDialog(gui.redownload,"Download the file again?","Download",JOptionPane.YES_NO_OPTION);
+			if(gui.yes == JOptionPane.YES_OPTION)
+				{
+					gui.proxyListModel.clear();
+					proxies.clear();
+					for (int i=0; i<proxy.getLength(); i++)
+					{
+						camera = new FlexTPSCamera();
+						element2 = (Element)proxy.item(i);
+						text2 = element2.getElementsByTagName("*");
+						for(int t = 0; t<text2.getLength();t++)
+						{
+							if(text2.item(t).getNodeName() == "ip")
+							{
+								camera.ip = text2.item(t).getTextContent().trim();
+							}
+							if(text2.item(t).getNodeName() == "port")
+							{
+								camera.port = text2.item(t).getTextContent().trim();
+								gui.port_nums.add(camera.port);
+								gui.proxyListModel.addElement(camera.port);	
+							}
+							if(text2.item(t).getNodeName() == "source-type")
+							{
+								camera.source_type = text2.item(t).getTextContent().trim();
+							}
+							if(text2.item(t).getNodeName() == "source-protocol")
+							{
+								camera.source_protocol = text2.item(t).getTextContent().trim();
+							}
+							if(text2.item(t).getNodeName() == "source-ip")
+							{
+								camera.source_ip = text2.item(t).getTextContent().trim();
+								//gui.proxyListModel.addElement(camera.source_ip);				
+							}
+							if(text2.item(t).getNodeName() == "source-fps")
+							{
+								camera.source_fps = text2.item(t).getTextContent().trim();
+							}
+							if(text2.item(t).getNodeName() == "persistent")
+							{
+								camera.persis = text2.item(t).getTextContent().trim();
+							}
+							if(text2.item(t).getNodeName() == "exit-on-failure")
+							{
+								camera.failure = text2.item(t).getTextContent().trim();
+							}
+							if(text2.item(t).getNodeName() == "scale-factor")
+							{
+								camera.scale_factor = text2.item(t).getTextContent().trim();
+							}
+							if(text2.item(t).getNodeName() == "max-connections")
+							{
+								camera.max_connections = text2.item(t).getTextContent().trim();
+							}
+							if(text2.item(t).getNodeName() == "source-port")
+							{
+								camera.source_port = text2.item(t).getTextContent().trim();
+							}
+							if(text2.item(t).getNodeName() == "source-id")
+							{
+								camera.source_id = text2.item(t).getTextContent().trim();
+							}
+							if(text2.item(t).getNodeName() == "source-width")
+							{
+								camera.source_width = text2.item(t).getTextContent().trim();
+							}
+							if(text2.item(t).getNodeName() == "source-height")
+							{
+								camera.source_height = text2.item(t).getTextContent().trim();
+							}
+							if(text2.item(t).getNodeName() == "robotic-type")
+							{
+								camera.bot_type = text2.item(t).getTextContent().trim();
+							}
+							if(text2.item(t).getNodeName() == "robotic-protocol")
+							{
+								camera.bot_protocol = text2.item(t).getTextContent().trim();
+							}
+							if(text2.item(t).getNodeName() == "robotic-ip")
+							{
+								camera.bot_ip = text2.item(t).getTextContent().trim();
+							}
+							if(text2.item(t).getNodeName() == "robotic-port")
+							{
+								camera.bot_port = text2.item(t).getTextContent().trim();
+							}
+							if(text2.item(t).getNodeName() == "robotic-id")
+							{
+								camera.bot_id = text2.item(t).getTextContent().trim();
+							}
+							if(text2.item(t).getNodeName() == "verbose-log")
+							{
+								camera.verbose_log = text2.item(t).getTextContent().trim();
+							}
+							if(text2.item(t).getNodeName() == "status-log")
+							{
+								camera.status_log = text2.item(t).getTextContent().trim();
+							}
+							else
+								continue;
+						}
+						proxies.add(camera);		
+					}
+				}
+			else
+				return;
+			gui.pers_true.setEnabled(false);
+			gui.exit_fail.setEnabled(false);
+			gui.ports.setEnabled(false);
+			gui.ips.setEnabled(false);
+			gui.max_connections.setEnabled(false);
+			gui.sourceip.setEnabled(false);
+			gui.sourceport.setEnabled(false);
+			gui.sourceid.setEnabled(false);
+			gui.sourcewidth.setEnabled(false);
+			gui.sourceheight.setEnabled(false);
+			gui.verb_log.setEnabled(false);
+			gui.stat_log.setEnabled(false);
+			gui.scalefactor.setEnabled(false);
+			gui.sourcefps.setEnabled(false);
+			gui.sourceprotocol.setEnabled(false);
+			gui.sourcetype.setEnabled(false);
+			gui.bottype.setEnabled(false);
+		}
+			
 		if(gui.downloaded == false)
 		{
 			for (int i=0; i<proxy.getLength(); i++)
@@ -1368,6 +1589,7 @@ class FlexTPSProxy
 					{
 						camera.port = text2.item(t).getTextContent().trim();
 						gui.port_nums.add(camera.port);
+						gui.proxyListModel.addElement(camera.port);	
 					}
 					if(text2.item(t).getNodeName() == "source-type")
 					{
@@ -1380,7 +1602,7 @@ class FlexTPSProxy
 					if(text2.item(t).getNodeName() == "source-ip")
 					{
 						camera.source_ip = text2.item(t).getTextContent().trim();
-						gui.proxyListModel.addElement(camera.source_ip);				
+						//gui.proxyListModel.addElement(camera.source_ip);				
 					}
 					if(text2.item(t).getNodeName() == "source-fps")
 					{
@@ -1461,6 +1683,7 @@ class FlexTPSProxy
 	public void delete()
 	{
 		//have to make the string into a file to allow the file to be deleted since you cant not delete a string
+		localFile = "~proxies.xml";
 	    File trash = new File(localFile);
 		trash.delete();
 		trash.deleteOnExit();
@@ -1472,6 +1695,8 @@ class FlexTPSProxy
 	    fc = new JFileChooser ();
         fc.showSaveDialog(saveButton);
         localsave = fc.getSelectedFile();
+        if(localsave == null)
+        	return;
         //use absolute path to get the whole path + filename to save file in specified location
 		String filename = localsave.getAbsolutePath() + ".xml";
         localsave = new File(filename);
@@ -1495,6 +1720,7 @@ class FlexTPSProxy
         	 }
 	}
 	
+	
 	//method to choose the file to upload a local file to the server, want to add where you can only see xml files
 	void uploadLocal()
 	{
@@ -1505,12 +1731,41 @@ class FlexTPSProxy
         System.out.println(uploadFile);
 	}
 	
-	void test()
+	//the code to upload a file to a server that is not saved locally 
+	void uploadBack(String path, String file) throws JSchException, SftpException, IOException
 	{
-		System.out.println(gui.place);
-		System.out.println(proxies.get(gui.place).source_ip);
+		String localFile = "~proxies.xml";
+		//localsave = new File(localFile);
+        String fname = localFile;
+        try
+        {
+             FileOutputStream fileOut = new FileOutputStream(fname);
+             PrintStream oos = new PrintStream (fileOut);
+             oos.println("<proxies>");
+             for(int i = 0; i < proxies.size();i++)
+            	 proxies.get(i).print(oos);
+             oos.println("</proxies>");
+             oos.close();
+             fileOut.close();
+         } catch (FileNotFoundException e) { 
+             System.out.println(e);   
+         } catch (IOException e) { 
+        	 StringWriter sw = new StringWriter();
+        	 PrintWriter pw = new PrintWriter(sw);
+        	 e.printStackTrace(pw);
+        	 System.out.println("Error = " + sw.toString());
+        	 }
+		remoteDirectory = sys_path;
+		this.login.channel = (ChannelSftp)login.session.openChannel("sftp"); 
+		login.channel.connect(); 
+		remoteDirectory = remoteDirectory + path;
+		login.channel.cd(remoteDirectory); 
+		FileInputStream fd = new FileInputStream(localFile);
+		login.channel.put(fd,file); 
+		fd.close();
+		delete();
+		} 
 	}
-}
 
 //class that will be used to edit and write back the xml file to a file
 class FlexTPSCamera
