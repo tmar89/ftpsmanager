@@ -71,6 +71,7 @@ public class ProxyGUI extends JFrame
 	private JButton delete = null;
 	private JButton saveserver = null;
 	private JButton download = null;
+	private JButton download_portal = null;
 	private JButton uploadlocal = null;
 	private JButton quit = null;
 	private JButton add = null;
@@ -80,6 +81,7 @@ public class ProxyGUI extends JFrame
 	private JMenuItem connect = null;
 	private JMenuItem disconnect = null;
 	private JMenuItem saveas = null;
+	private JMenuItem saveas2 = null;
 	private Login login = new Login();
 	private FlexTPSProxy proxy = new FlexTPSProxy();
 	private JOptionPane failed = null;
@@ -115,6 +117,12 @@ public class ProxyGUI extends JFrame
 	private JLabel botprotocol_label = null;
 	private JLabel sourcetype_label = null;
 	private JLabel bottype_label = null;
+	private JLabel id_label = null;
+	private JLabel portinuse_label = null;
+	private JLabel sitename_label = null;
+	private JLabel siteip_label = null;
+	private JLabel siteadmin_label = null;
+	private JLabel feedname_label = null;
 	protected JTextField max_connections = null;
 	protected String default_maxconnect = "100"; 
 	protected JTextField sourceip = null;
@@ -149,6 +157,18 @@ public class ProxyGUI extends JFrame
 	private JOptionPane confirm;
 	JOptionPane redownload;
 	public int yes = 0;
+	protected JTextField port_id = null;
+	protected JCheckBox port_inuse = null;
+	public boolean is_proxy = false;
+	protected String default_sitename = "lehigh";
+	protected String default_siteip = "128.180.53.2";
+	protected String default_email = "tmm3@lehigh.edu";
+	protected String default_group = "NEES Lehigh";
+	protected String default_fedd = "RTMD";
+	protected JTextField sitename = null;
+	protected JTextField siteip = null;
+	protected JTextField siteadmin = null;
+	protected JTextField feedname = null;
 
 	public ProxyGUI() 
 	{
@@ -160,22 +180,31 @@ public class ProxyGUI extends JFrame
 	
 	void initialize() 
 	 {
-		this.setSize(740,375);
+		this.setSize(800,600);
 		this.setContentPane(getJContentPane());
-		this.setTitle("FlexTPS Proxy Editor");
+		this.setTitle("FlexTPS Editor");
 		
 		//makes the menu bar
 		menuBar = new JMenuBar();
 		this.setJMenuBar(menuBar);
 		file = new JMenu("File");
 		menuBar.add(file);
-		saveas = new JMenuItem("Save as");
+		saveas = new JMenuItem("Save Proxy as");
+		saveas2 = new JMenuItem("Save Portal as");
 		file.add(saveas);
 		saveas.addMouseListener(new java.awt.event.MouseAdapter() 
 		{
 			public void mousePressed(java.awt.event.MouseEvent e) 
 			{
 				proxy.saveLocal();
+			}
+		});
+		file.add(saveas2);
+		saveas2.addMouseListener(new java.awt.event.MouseAdapter() 
+		{
+			public void mousePressed(java.awt.event.MouseEvent e) 
+			{
+				proxy.saveLocalportal();
 			}
 		});
 		server = new JMenu("Server");
@@ -233,16 +262,24 @@ public class ProxyGUI extends JFrame
 			main_window.add(getJLabel18(), null);
 			main_window.add(getJLabel19(), null);
 			main_window.add(getJLabel20(), null);
+			main_window.add(getJLabel21(), null);
+			main_window.add(getJLabel22(), null);
+			main_window.add(getJLabel23(), null);
+			main_window.add(getJLabel24(), null);
+			main_window.add(getJLabel25(), null);
+			main_window.add(getJLabel26(), null);
 			main_window.add(getJButton1(), null);
 			main_window.add(getJButton2(), null);
 			main_window.add(getJButton3(), null);
 			main_window.add(getJButton4(), null);
 			main_window.add(getJButton5(), null);
 			main_window.add(getJButton6(), null);
+			main_window.add(getJButton7(), null);
 			main_window.add(getCheckBox(), null);
 			main_window.add(getCheckBox2(), null);
 			main_window.add(getCheckBox3(), null);
 			main_window.add(getCheckBox4(), null);
+			main_window.add(getCheckBox5(), null);
 			main_window.add(getTextField(),null);
 			main_window.add(getTextField1(),null);
 			main_window.add(getTextField2(),null);
@@ -254,6 +291,11 @@ public class ProxyGUI extends JFrame
 			main_window.add(getTextField8(),null);
 			main_window.add(getTextField9(),null);
 			main_window.add(getTextField10(),null);
+			main_window.add(getTextField11(),null);
+			main_window.add(getTextField12(),null);
+			main_window.add(getTextField13(),null);
+			main_window.add(getTextField14(),null);
+			//main_window.add(getTextField15(),null);
 			main_window.add(getJcombobox(),null);
 			main_window.add(getJcombobox1(),null);
 			main_window.add(getJcombobox2(),null);
@@ -297,6 +339,8 @@ public class ProxyGUI extends JFrame
 						sourceprotocol.setEnabled(true);
 						sourcetype.setEnabled(true);
 						bottype.setEnabled(true);
+						port_inuse.setEnabled(true);
+						port_id.setEnabled(true);
 						int indexSelected = cameralist.getSelectedIndex();
 						if(indexSelected == -1)
 							return;
@@ -326,6 +370,10 @@ public class ProxyGUI extends JFrame
 							verb_log.setSelected(true);	
 						else
 							verb_log.setSelected(false);
+						if(proxy.proxies.get(place).useInPortal == true)
+							port_inuse.setSelected(true);
+						else
+							port_inuse.setSelected(false);
 						if(proxy.proxies.get(place).status_log.contentEquals("true"))
 							stat_log.setSelected(true);	
 						else
@@ -341,6 +389,10 @@ public class ProxyGUI extends JFrame
 							sourceport.setText(proxy.proxies.get(place).source_port);
 						else 
 							sourceport.setText("");
+						if(!proxy.proxies.get(place).id.isEmpty())
+							port_id.setText(proxy.proxies.get(place).id);
+						else
+							port_id.setText("");
 						if(!proxy.proxies.get(place).source_id.isEmpty())
 							sourceid.setText(proxy.proxies.get(place).source_id);
 						else 
@@ -715,6 +767,27 @@ public class ProxyGUI extends JFrame
 		return stat_log;
 	}
 	
+	//port in use label
+	private JLabel getJLabel22() 
+	{
+		if (portinuse_label == null) {
+			portinuse_label = new JLabel();
+			portinuse_label.setText("Port in Use:");
+			portinuse_label.setBounds(new Rectangle(665, 25, 284, 16));
+		}
+		return portinuse_label;
+	}
+	
+	//port in use jcheck box
+	private JCheckBox getCheckBox5()
+	{
+		port_inuse = new JCheckBox("true");
+		port_inuse.setBounds(new Rectangle(730, 25, 51, 21));	
+		port_inuse.setEnabled(false);
+		main_window.repaint();
+		return port_inuse;
+	}
+	
 	//label for port
 	private JLabel getJLabel() 
 	{
@@ -863,6 +936,27 @@ public class ProxyGUI extends JFrame
 		return sourcewidth;
 	}
 	
+	//label for id
+	private JLabel getJLabel21() 
+	{
+		if (id_label == null) {
+			id_label = new JLabel();
+			id_label.setText("ID:");
+			id_label.setBounds(new Rectangle(515, 115, 284, 16));
+		}
+		return id_label;
+	}
+	
+	//textfield for portid
+	private JTextField getTextField11()
+	{
+		port_id = new JTextField();
+		port_id.setBounds(new Rectangle(533, 115, 90, 21));
+		port_id.setEnabled(false);
+		port_id.setText("");
+		return port_id;
+	}
+	
 	//label for sourceheight
 	private JLabel getJLabel8() 
 	{
@@ -947,6 +1041,80 @@ public class ProxyGUI extends JFrame
 		return botid;
 	}
 	
+	//jlabel for sitename
+	private JLabel getJLabel23() 
+	{
+		if (sitename_label == null) {
+			sitename_label = new JLabel();
+			sitename_label.setText("Site-name:");
+			sitename_label.setBounds(new Rectangle(150, 400, 284, 16));
+		}
+		return sitename_label;
+	}
+	
+	//presents the site name
+	private JTextField getTextField12()
+	{
+		sitename = new JTextField();
+		sitename.setBounds(new Rectangle(215, 400, 100, 21));
+		sitename.setEnabled(false);
+		sitename.setText(default_sitename);
+		return sitename;
+	}
+	
+	//jlabel for siteip
+	private JLabel getJLabel24() 
+	{
+		if (siteip_label == null) {
+			siteip_label = new JLabel();
+			siteip_label.setText("Site-ip:");
+			siteip_label.setBounds(new Rectangle(325, 400, 284, 16));
+		}
+		return siteip_label;
+	}
+	
+	//jtextfield for siteip
+	private JTextField getTextField13()
+	{
+		siteip = new JTextField();
+		siteip.setBounds(new Rectangle(368, 400, 100, 21));
+		siteip.setEnabled(false);
+		siteip.setText(default_siteip);
+		return siteip;
+	}
+	
+	//jlabel for siteadmin
+	private JLabel getJLabel25() 
+	{
+		if (siteadmin_label == null) {
+			siteadmin_label = new JLabel();
+			siteadmin_label.setText("Site-admin email:");
+			siteadmin_label.setBounds(new Rectangle(150, 450, 284, 16));
+		}
+		return siteadmin_label;
+	}
+	
+	//jtext field for siteadmin email
+	private JTextField getTextField14()
+	{
+		siteadmin = new JTextField();
+		siteadmin.setBounds(new Rectangle(252, 450, 150, 21));
+		siteadmin.setEnabled(false);
+		siteadmin.setText(default_email);
+		return siteadmin;
+	}
+	
+	//jlabel for siteadmin
+	private JLabel getJLabel26() 
+	{
+		if (feedname_label == null) {
+			feedname_label = new JLabel();
+			feedname_label.setText("Feed name:");
+			feedname_label.setBounds(new Rectangle(415, 450, 284, 16));
+		}
+		return feedname_label;
+	}
+	
 	//make button to save to server, trouble "repainting" after clearing of jlist
 	private JButton getJButton() 
 	{
@@ -975,10 +1143,15 @@ public class ProxyGUI extends JFrame
 						}
 					}
 					proxy.proxies.get(selected).port = ports.getText();
+					proxy.proxies.get(selected).id = port_id.getText();
 					if(pers_true.isSelected())
 						proxy.proxies.get(selected).persis = "true";
 					else
 						proxy.proxies.get(selected).persis = "false";
+					if(port_inuse.isSelected())
+						proxy.proxies.get(selected).useInPortal = true;
+					else 
+						proxy.proxies.get(selected).useInPortal = false;
 					if(exit_fail.isSelected())
 						proxy.proxies.get(selected).failure = "true";
 					else
@@ -1088,6 +1261,7 @@ public class ProxyGUI extends JFrame
 				{
 					try 
 					{
+						is_proxy = true;
 						proxy.sys_path = "/home/jgr208";
 						proxy.getFile("/proxies/etc","proxies.xml");
 					} 
@@ -1115,7 +1289,19 @@ public class ProxyGUI extends JFrame
 			{
 				public void mousePressed(java.awt.event.MouseEvent e) 
 				{
-					proxy.uploadLocal();
+					try {
+						proxy.sys_path = "/home/jgr208";
+						proxy.uploadLocal("/proxies/etc");
+					} catch (JSchException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					} catch (SftpException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					} catch (IOException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
 				}
 			});
 		}
@@ -1232,6 +1418,44 @@ public class ProxyGUI extends JFrame
 			});
 		}
 		return delete;
+	}
+	
+	//button that will download the portal file 
+	private JButton getJButton7() 
+	{
+		if (download_portal == null) 
+		{
+			download_portal = new JButton();
+			download_portal.setBounds(new Rectangle(15, 315, 130, 25));
+			download_portal.setText("Download Portal");
+			download_portal.addMouseListener(new java.awt.event.MouseAdapter() 
+			{
+				public void mouseClicked(java.awt.event.MouseEvent e) 
+				{
+					proxy.sys_path = "/home/jgr208";
+					try {
+						is_proxy = false;
+						proxy.getFile("/portal/etc/conf","portal.xml");
+					} catch (JSchException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					} catch (SftpException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					} catch (ParserConfigurationException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					} catch (SAXException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					} catch (IOException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+				}
+			});
+		}
+		return download_portal;
 	}
 	
 	//prints out message if combobox is already filled
@@ -1376,6 +1600,7 @@ class FlexTPSProxy
 	public DocumentBuilder docBuilder;
 	public Document doc;
 	public NodeList proxy;
+	public NodeList portal;
 	public NodeList list;
 	public Element element2;
 	public NodeList text2;
@@ -1424,12 +1649,20 @@ class FlexTPSProxy
 		login.channel.connect(); 
 		remoteDirectory = remoteDirectory + path;
 		login.channel.cd(remoteDirectory); 
-	    localFile = "~proxies.xml";
+		//checks if it is downloading a proxy or portal file
+		if(gui.is_proxy ==true)
+			localFile = "~proxies.xml";
+		else
+			localFile = "c:\\users\\jason\\desktop\\portal.xml";
 		login.channel.get((remotefile), localFile); 
 		docBuilder = factory.newDocumentBuilder();
 		doc = docBuilder.parse(localFile);
 		doc.getDocumentElement ().normalize ();
-		getProxies();
+		//will check if it is parsing a proxy or portal file 
+		if(gui.is_proxy ==true)
+			getProxies();
+		else
+			getPortals();
 	}
 	
 	//just gets the proxy elemnts 
@@ -1437,6 +1670,12 @@ class FlexTPSProxy
 	{
 		proxy = doc.getElementsByTagName("proxy");
 		add();
+	}
+	
+	//will be used to get the portal elements 
+	void getPortals()
+	{
+		portal = doc.getElementsByTagName("portal");
 	}
 	
 	//adds all the xml elements to the arraylist and puts the ips in the combo box
@@ -1722,13 +1961,25 @@ class FlexTPSProxy
 	
 	
 	//method to choose the file to upload a local file to the server, want to add where you can only see xml files
-	void uploadLocal()
+	void uploadLocal(String path) throws JSchException, SftpException, IOException
 	{
 		fc = new JFileChooser();
         fc.showOpenDialog(openButton);
         fc.setFileSelectionMode(1);
         uploadFile = fc.getSelectedFile();
-        System.out.println(uploadFile);
+        if(uploadFile == null)
+        	return;
+        String filename = uploadFile.getName();
+        remoteDirectory = sys_path;
+		this.login.channel = (ChannelSftp)login.session.openChannel("sftp"); 
+		login.channel.connect(); 
+		remoteDirectory = remoteDirectory + path;
+		System.out.println(remoteDirectory);
+		login.channel.cd(remoteDirectory); 
+		FileInputStream fd = new FileInputStream(uploadFile);
+		login.channel.put(fd,filename); 
+        System.out.println(filename);
+        fd.close();
 	}
 	
 	//the code to upload a file to a server that is not saved locally 
@@ -1765,7 +2016,21 @@ class FlexTPSProxy
 		fd.close();
 		delete();
 		} 
+	
+	void saveLocalportal()
+	{
+		fc = new JFileChooser ();
+        fc.showSaveDialog(saveButton);
+        localsave = fc.getSelectedFile();
+        if(localsave == null)
+        	return;
+        //use absolute path to get the whole path + filename to save file in specified location
+		String filename = localsave.getAbsolutePath() + ".xml";
+        localsave = new File(filename);
+        String fname = filename;
+		System.out.println(fname);
 	}
+}
 
 //class that will be used to edit and write back the xml file to a file
 class FlexTPSCamera
@@ -1791,6 +2056,8 @@ class FlexTPSCamera
 	 public String bot_id = "";
 	 public String verbose_log = "false";
 	 public String status_log = "false";
+	 public String id = "";
+	 public boolean useInPortal = false;
 	 
 	 // Various Constructors
 	 public FlexTPSCamera() {}
