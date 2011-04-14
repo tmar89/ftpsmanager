@@ -1,7 +1,7 @@
 					/************************************	
-					 * FlexTPS proxy editor 			*
+					 * FlexTPS editor 					*
 					 * Jason Ricles						*
-					 * Last Edit: 3/23/11	            *
+					 * Last Edit: 4/14/11	            *
 					 ************************************/
 //still need to implement some of the buttons, such as save to server, and upload local, as well as change max connections listener
 import java.awt.BorderLayout;
@@ -123,6 +123,7 @@ public class ProxyGUI extends JFrame
 	private JLabel siteip_label = null;
 	private JLabel siteadmin_label = null;
 	private JLabel feedname_label = null;
+	private JLabel groupname_label = null;
 	protected JTextField max_connections = null;
 	protected String default_maxconnect = "100"; 
 	protected JTextField sourceip = null;
@@ -163,12 +164,13 @@ public class ProxyGUI extends JFrame
 	protected String default_sitename = "lehigh";
 	protected String default_siteip = "128.180.53.2";
 	protected String default_email = "tmm3@lehigh.edu";
-	protected String default_group = "NEES Lehigh";
-	protected String default_fedd = "RTMD";
+	protected String default_groupname = "NEES Lehigh";
+	protected String default_feedname = "RTMD";
 	protected JTextField sitename = null;
 	protected JTextField siteip = null;
 	protected JTextField siteadmin = null;
 	protected JTextField feedname = null;
+	protected JTextField groupname = null;
 
 	public ProxyGUI() 
 	{
@@ -180,7 +182,7 @@ public class ProxyGUI extends JFrame
 	
 	void initialize() 
 	 {
-		this.setSize(800,600);
+		this.setSize(825,600);
 		this.setContentPane(getJContentPane());
 		this.setTitle("FlexTPS Editor");
 		
@@ -268,6 +270,7 @@ public class ProxyGUI extends JFrame
 			main_window.add(getJLabel24(), null);
 			main_window.add(getJLabel25(), null);
 			main_window.add(getJLabel26(), null);
+			main_window.add(getJLabel27(), null);
 			main_window.add(getJButton1(), null);
 			main_window.add(getJButton2(), null);
 			main_window.add(getJButton3(), null);
@@ -295,7 +298,8 @@ public class ProxyGUI extends JFrame
 			main_window.add(getTextField12(),null);
 			main_window.add(getTextField13(),null);
 			main_window.add(getTextField14(),null);
-			//main_window.add(getTextField15(),null);
+			main_window.add(getTextField15(),null);
+			main_window.add(getTextField16(),null);
 			main_window.add(getJcombobox(),null);
 			main_window.add(getJcombobox1(),null);
 			main_window.add(getJcombobox2(),null);
@@ -341,6 +345,11 @@ public class ProxyGUI extends JFrame
 						bottype.setEnabled(true);
 						port_inuse.setEnabled(true);
 						port_id.setEnabled(true);
+						sitename.setEnabled(true);
+						siteip.setEnabled(true);
+						siteadmin.setEnabled(true);
+						feedname.setEnabled(true);
+						groupname.setEnabled(true);
 						int indexSelected = cameralist.getSelectedIndex();
 						if(indexSelected == -1)
 							return;
@@ -371,9 +380,23 @@ public class ProxyGUI extends JFrame
 						else
 							verb_log.setSelected(false);
 						if(proxy.proxies.get(place).useInPortal == true)
+						{
 							port_inuse.setSelected(true);
+							sitename.setEnabled(true);
+							siteip.setEnabled(true);
+							siteadmin.setEnabled(true);
+							feedname.setEnabled(true);
+							groupname.setEnabled(true);
+						}
 						else
+						{
 							port_inuse.setSelected(false);
+							sitename.setEnabled(false);
+							siteip.setEnabled(false);
+							siteadmin.setEnabled(false);
+							feedname.setEnabled(false);
+							groupname.setEnabled(false);
+						}
 						if(proxy.proxies.get(place).status_log.contentEquals("true"))
 							stat_log.setSelected(true);	
 						else
@@ -772,7 +795,7 @@ public class ProxyGUI extends JFrame
 	{
 		if (portinuse_label == null) {
 			portinuse_label = new JLabel();
-			portinuse_label.setText("Port in Use:");
+			portinuse_label.setText("Use in Portal:");
 			portinuse_label.setBounds(new Rectangle(665, 25, 284, 16));
 		}
 		return portinuse_label;
@@ -782,10 +805,35 @@ public class ProxyGUI extends JFrame
 	private JCheckBox getCheckBox5()
 	{
 		port_inuse = new JCheckBox("true");
-		port_inuse.setBounds(new Rectangle(730, 25, 51, 21));	
+		port_inuse.setBounds(new Rectangle(740, 25, 51, 21));	
 		port_inuse.setEnabled(false);
+		port_inuse.addActionListener(new ActionListener() {public void actionPerformed(ActionEvent actionEvent) 
+		{
+			 enablePortcontrols();
+		}});
 		main_window.repaint();
 		return port_inuse;
+	}
+
+	//sets the port controls enabled or disabled when the check box is clicked
+	public void enablePortcontrols()
+	{
+		//if(port_inuse.getSelectedObjects() == null)
+		//{
+			//sitename.setEnabled(false);
+			//siteip.setEnabled(false);
+			//siteadmin.setEnabled(false);
+			//feedname.setEnabled(false);
+			//groupname.setEnabled(false);
+		//}
+		//else
+		//{
+			sitename.setEnabled(true);
+			siteip.setEnabled(true);
+			siteadmin.setEnabled(true);
+			feedname.setEnabled(true);
+			groupname.setEnabled(true);
+		//}
 	}
 	
 	//label for port
@@ -1083,6 +1131,27 @@ public class ProxyGUI extends JFrame
 		return siteip;
 	}
 	
+	//jlabel for groupname
+	private JLabel getJLabel27() 
+	{
+		if (groupname_label == null) {
+			groupname_label = new JLabel();
+			groupname_label.setText("Group-name:");
+			groupname_label.setBounds(new Rectangle(480, 400, 284, 16));
+		}
+		return groupname_label;
+	}
+	
+	//jtext field for group name
+	private JTextField getTextField16()
+	{
+		groupname = new JTextField();
+		groupname.setBounds(new Rectangle(555, 400, 150, 21));
+		groupname.setEnabled(false);
+		groupname.setText(default_groupname);
+		return groupname;
+	}
+	
 	//jlabel for siteadmin
 	private JLabel getJLabel25() 
 	{
@@ -1104,7 +1173,7 @@ public class ProxyGUI extends JFrame
 		return siteadmin;
 	}
 	
-	//jlabel for siteadmin
+	//jlabel for feedname
 	private JLabel getJLabel26() 
 	{
 		if (feedname_label == null) {
@@ -1113,6 +1182,16 @@ public class ProxyGUI extends JFrame
 			feedname_label.setBounds(new Rectangle(415, 450, 284, 16));
 		}
 		return feedname_label;
+	}
+	
+	//jtext field for feedname
+	private JTextField getTextField15()
+	{
+		feedname = new JTextField();
+		feedname.setBounds(new Rectangle(485, 450, 150, 21));
+		feedname.setEnabled(false);
+		feedname.setText(default_feedname);
+		return feedname;
 	}
 	
 	//make button to save to server, trouble "repainting" after clearing of jlist
@@ -1653,7 +1732,7 @@ class FlexTPSProxy
 		if(gui.is_proxy ==true)
 			localFile = "~proxies.xml";
 		else
-			localFile = "c:\\users\\jason\\desktop\\portal.xml";
+			localFile = "~portal.xml";
 		login.channel.get((remotefile), localFile); 
 		docBuilder = factory.newDocumentBuilder();
 		doc = docBuilder.parse(localFile);
@@ -1676,6 +1755,7 @@ class FlexTPSProxy
 	void getPortals()
 	{
 		portal = doc.getElementsByTagName("portal");
+		delete();
 	}
 	
 	//adds all the xml elements to the arraylist and puts the ips in the combo box
@@ -1922,8 +2002,14 @@ class FlexTPSProxy
 	public void delete()
 	{
 		//have to make the string into a file to allow the file to be deleted since you cant not delete a string
+		//made it to delete both files, since if you try to use the bool may run into a problem at some time and leave file on the system
+		//also delete on exit is the back up just incase it was not deleted for some reason or the program crashes during download 
 		localFile = "~proxies.xml";
 	    File trash = new File(localFile);
+		trash.delete();
+		trash.deleteOnExit();
+		localFile = "~portal.xml";
+		trash = new File(localFile);
 		trash.delete();
 		trash.deleteOnExit();
 	}
@@ -2017,6 +2103,7 @@ class FlexTPSProxy
 		delete();
 		} 
 	
+	//this is the method that will be used to save a portal xml file locally
 	void saveLocalportal()
 	{
 		fc = new JFileChooser ();
@@ -2028,7 +2115,51 @@ class FlexTPSProxy
 		String filename = localsave.getAbsolutePath() + ".xml";
         localsave = new File(filename);
         String fname = filename;
-		System.out.println(fname);
+        try
+        {
+             FileOutputStream fileOut = new FileOutputStream(fname);
+             PrintStream oos = new PrintStream (fileOut);
+             oos.println("<portal>");
+             oos.println();
+    		 oos.println("\t<sitename>" + gui.sitename.getText() + "</sitename>"); 
+    		 oos.println("\t<dvr>" + "</dvr>"); 
+             for(int i = 0; i < proxies.size();i++)
+             {
+            	 if(proxies.get(i).useInPortal && !proxies.get(i).id.isEmpty())
+            	 {
+            		 proxies.get(i).printPortalproxy(oos);
+            	 }
+             }
+             oos.println("<group>");
+             oos.println("\t<id>" + gui.groupname.getText() + "</id>");
+             oos.println("<feed>");
+             oos.println("\t<id>" + gui.feedname.getText() + "</id>");
+             for(int i = 0; i < proxies.size();i++)
+             {
+            	 if(proxies.get(i).useInPortal && !proxies.get(i).id.isEmpty())
+            	 {
+            		 proxies.get(i).printPortalstream(oos);
+            	 }
+             }
+             oos.println("</feed>");
+             oos.println("<sections>");
+             oos.println("\t<id>local_video</id>");
+             oos.println("\t<id>embedded_local_video</id>");
+             oos.println("</sections>");
+             oos.println("<users>");
+             oos.println("\t<id>*</id>");
+             oos.println("</users>");
+             oos.println("</group>");
+             oos.println("</portal>");
+             oos.close();
+         } catch (FileNotFoundException e) { 
+             System.out.println(e);   
+         } catch (IOException e) { 
+        	 StringWriter sw = new StringWriter();
+        	 PrintWriter pw = new PrintWriter(sw);
+        	 e.printStackTrace(pw);
+        	 System.out.println("Error = " + sw.toString());
+        	 }
 	}
 }
 
@@ -2058,6 +2189,7 @@ class FlexTPSCamera
 	 public String status_log = "false";
 	 public String id = "";
 	 public boolean useInPortal = false;
+	 public ProxyGUI gui;
 	 
 	 // Various Constructors
 	 public FlexTPSCamera() {}
@@ -2112,5 +2244,52 @@ class FlexTPSCamera
 			 ps.println("\t\t <status-log>" + status_log + "</status-log>");
 		 ps.println("\t</proxy>");
 		 ps.println();
+	 }
+	 
+	 //method to print the proxy information in the portal xml file 
+	 public void printPortalproxy(PrintStream ps) 
+	 {
+		 ps.println();
+		 ps.println("\t<proxy>");
+		 if(!id.isEmpty())
+			 ps.println("\t\t <id>" + id + "</id>");
+		 if(!ip.isEmpty())
+			 ps.println("\t\t <ip>" + ip + "</ip>");
+		 if(!port.isEmpty())
+			 ps.println("\t\t <port>" + port + "</port>");
+		 ps.println("\t</proxy>");
+		 ps.println();
+	 }
+	 
+	 //method to print the stream information for the proxy xml file 
+	 public void printPortalstream(PrintStream ps) 
+	 {
+		 ps.println();
+		 ps.println("\t<stream>");
+		 if(!id.isEmpty())
+			 ps.println("\t\t <id>" + id + "</id>");
+		 if(!max_connections.isEmpty())
+			 ps.println("\t\t <max-connection-length>" + max_connections + "</max-connection-length>");			
+		 if(!source_fps.isEmpty())
+			 ps.println("\t\t <max-fps>" + source_fps + "</max-fps>");			
+		 if(!id.isEmpty())
+			 ps.println("\t\t <proxy-id>" + id + "</proxy-id>");	
+		 if(!source_fps.isEmpty())
+			 ps.println("\t\t <initial-fps>" + source_fps + "</initial-fps>");			
+		 ps.println("\t\t <stream-enabled>true</stream-enabled>");
+		 ps.println("\t\t <video-box-size>medium</video-box-size>");
+		 if(!bot_type.isEmpty())
+		 {
+			 ps.println("\t\t <robotic-enabled>true</robotic-enabled>");
+			 ps.println("\t\t <robotic-controls>");
+			 ps.println("\t\t\t <zoom>true</zoom>");
+			 ps.println("\t\t\t <tilt>false</tilt>");
+			 ps.println("\t\t\t <iris>false</iris>");
+			 ps.println("\t\t\t <focus>false</focus>");
+			 ps.println("\t\t\t <pan>true</pan>");
+			 ps.println("\t\t </robotic-controls>");
+		 }
+			 ps.println("\t</stream>");
+			 ps.println();
 	 }
 }
