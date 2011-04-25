@@ -11,14 +11,17 @@ import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Scanner;
@@ -53,6 +56,8 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
+
+import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
@@ -171,6 +176,9 @@ public class ProxyGUI extends JFrame
 	protected JTextField siteadmin = null;
 	protected JTextField feedname = null;
 	protected JTextField groupname = null;
+	private JButton start_proxy = null;
+	private JButton stop_proxy = null;
+	private JButton upload_portal = null;
 
 	public ProxyGUI() 
 	{
@@ -278,6 +286,9 @@ public class ProxyGUI extends JFrame
 			main_window.add(getJButton5(), null);
 			main_window.add(getJButton6(), null);
 			main_window.add(getJButton7(), null);
+			main_window.add(getJButton8(), null);
+			main_window.add(getJButton9(), null);
+			main_window.add(getJButton10(), null);
 			main_window.add(getCheckBox(), null);
 			main_window.add(getCheckBox2(), null);
 			main_window.add(getCheckBox3(), null);
@@ -1309,7 +1320,7 @@ public class ProxyGUI extends JFrame
 						{
 						try
 					{
-					    String sys_path = "/home/jgr208";
+					    String sys_path = "/opt/flexTPS";
 						proxy.uploadBack("/proxies/etc","proxies.xml");
 					}
 						catch(Exception e1)
@@ -1341,7 +1352,7 @@ public class ProxyGUI extends JFrame
 					try 
 					{
 						is_proxy = true;
-						proxy.sys_path = "/home/jgr208";
+						proxy.sys_path = "/opt/flexTPS";
 						proxy.getFile("/proxies/etc","proxies.xml");
 					} 
 					catch(Exception e1)
@@ -1369,7 +1380,7 @@ public class ProxyGUI extends JFrame
 				public void mousePressed(java.awt.event.MouseEvent e) 
 				{
 					try {
-						proxy.sys_path = "/home/jgr208";
+						proxy.sys_path = "/opt/flexTPS";
 						proxy.uploadLocal("/proxies/etc");
 					} catch (JSchException e1) {
 						// TODO Auto-generated catch block
@@ -1511,7 +1522,7 @@ public class ProxyGUI extends JFrame
 			{
 				public void mouseClicked(java.awt.event.MouseEvent e) 
 				{
-					proxy.sys_path = "/home/jgr208";
+					proxy.sys_path = "/opt/flexTPS";
 					try {
 						is_proxy = false;
 						proxy.getFile("/portal/etc/conf","portal.xml");
@@ -1537,6 +1548,93 @@ public class ProxyGUI extends JFrame
 		return download_portal;
 	}
 	
+	//button that will start the portal
+	private JButton getJButton8() 
+	{
+		if (start_proxy == null) 
+		{
+			start_proxy = new JButton();
+			start_proxy.setBounds(new Rectangle(150, 315, 100, 25));
+			start_proxy.setText("Start Proxy");
+			start_proxy.addMouseListener(new java.awt.event.MouseAdapter() 
+			{
+				public void mouseClicked(java.awt.event.MouseEvent e) 
+				{
+					try
+					{
+						proxy.start_proxy("sudo /sbin/service flextps_proxies start\n");
+					}
+					catch (Exception e1)
+					{
+						failed = new JOptionPane();
+						failed.setSize(new Dimension(119, 69));
+						JOptionPane.showMessageDialog(failed, "Failed to start proxy");
+					}
+				}
+			});
+		}
+		return start_proxy;
+	}
+	
+	//button that will upload the portal file 
+	private JButton getJButton10() 
+	{
+		if (upload_portal == null) 
+		{
+			upload_portal = new JButton();
+			upload_portal.setBounds(new Rectangle(360, 315, 130, 25));
+			upload_portal.setText("Upload Portal");
+			upload_portal.addMouseListener(new java.awt.event.MouseAdapter() 
+			{
+				public void mousePressed(java.awt.event.MouseEvent e) 
+				{
+					try {
+						proxy.sys_path = "/opt/flexTPS";
+						proxy.uploadLocal("/portal/etc/conf");
+					} catch (JSchException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					} catch (SftpException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					} catch (IOException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+				}
+			});
+		}
+		return upload_portal;
+	}
+	
+	//button that will stop the portal
+	private JButton getJButton9() 
+	{
+		if (stop_proxy == null) 
+		{
+			stop_proxy = new JButton();
+			stop_proxy.setBounds(new Rectangle(255, 315, 100, 25));
+			stop_proxy.setText("Stop Proxy");
+			stop_proxy.addMouseListener(new java.awt.event.MouseAdapter() 
+			{
+				public void mouseClicked(java.awt.event.MouseEvent e) 
+				{
+					try
+					{
+						proxy.stop_proxy("sudo /sbin/service flextps_proxies stop\n");
+					}
+					catch (Exception e1)
+					{
+						failed = new JOptionPane();
+						failed.setSize(new Dimension(119, 69));
+						JOptionPane.showMessageDialog(failed, "Failed to stop proxy");
+					}
+				}
+			});
+		}
+		return stop_proxy;
+	}
+	
 	//prints out message if combobox is already filled
 	void already()
 	{
@@ -1547,7 +1645,7 @@ public class ProxyGUI extends JFrame
 	    proxyListModel.clear();
 			try 
 			{
-				proxy.sys_path = "/home/jgr208";
+				proxy.sys_path = "/opt/flexTPS";
 				proxy.getFile("/proxies/etc","proxies.xml");
 			} 
 			catch(Exception e1)
@@ -1704,6 +1802,7 @@ class FlexTPSProxy
 	String localFile;
 	public ProxyGUI gui;
 	protected String path;
+	protected Channel proxy_channel;
 
 	//constructor
 	public FlexTPSProxy()
@@ -1719,6 +1818,43 @@ class FlexTPSProxy
 		this.factory = factory;
 	}
 	
+	//this is the method to start the proxies, and confirms it has started with a popup
+	void start_proxy(String command) throws JSchException, InterruptedException
+	{
+		proxy_channel = login.session.openChannel("shell");
+		InputStream input = null;
+	      try 
+	      {   
+	        input = new ByteArrayInputStream(command.getBytes("UTF-8"));    	  
+		  } 
+	      catch (UnsupportedEncodingException e) {}	
+	      proxy_channel.setInputStream(input);
+	      proxy_channel.setOutputStream(System.out);      
+	      proxy_channel.connect(3*1000);      
+	      Thread.sleep(1000);
+	      JOptionPane start= new JOptionPane();
+		  start.setSize(new Dimension(119, 69));
+		  JOptionPane.showMessageDialog(start, "Proxy started");
+	}
+	
+	//this is the method to stop the proxies, and confirms it has started with a popup
+	void stop_proxy(String command) throws JSchException, InterruptedException
+	{
+		proxy_channel = login.session.openChannel("shell");
+		InputStream input = null;
+	      try 
+	      {   
+	        input = new ByteArrayInputStream(command.getBytes("UTF-8"));    	  
+		  } 
+	      catch (UnsupportedEncodingException e) {}	
+	      proxy_channel.setInputStream(input);
+	      proxy_channel.setOutputStream(System.out);      
+	      proxy_channel.connect(3*1000);      
+	      Thread.sleep(1000);
+	      JOptionPane start= new JOptionPane();
+		  start.setSize(new Dimension(119, 69));
+		  JOptionPane.showMessageDialog(start, "Proxy stopped");
+	}
 	
 	//method to download proxy files
 	void getFile(String path,String remotefile) throws JSchException, SftpException, ParserConfigurationException, SAXException, IOException
@@ -2121,7 +2257,9 @@ class FlexTPSProxy
              PrintStream oos = new PrintStream (fileOut);
              oos.println("<portal>");
              oos.println();
-    		 oos.println("\t<sitename>" + gui.sitename.getText() + "</sitename>"); 
+    		 oos.println("\t<site-name>" + gui.sitename.getText() + "</site-name>"); 
+    		 oos.println("\t<site-ip>" + gui.siteip.getText() + "</site-ip>");
+    		 oos.println("\t<site-admin-email>" + gui.siteadmin.getText() + "</site-admin-email>");
     		 oos.println("\t<dvr>" + "</dvr>"); 
              for(int i = 0; i < proxies.size();i++)
              {
