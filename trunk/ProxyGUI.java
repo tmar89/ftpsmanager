@@ -1,7 +1,7 @@
 					/************************************	
 					 * FlexTPS editor 					*
 					 * Jason Ricles						*
-					 * Last Edit: 4/14/11	            *
+					 * Last Edit: 4/26/11	            *
 					 ************************************/
 //still need to implement some of the buttons, such as save to server, and upload local, as well as change max connections listener
 import java.awt.BorderLayout;
@@ -11,6 +11,8 @@ import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -66,7 +68,7 @@ import com.jcraft.jsch.SftpException;
 import javax.swing.JList;
 
 //class that sets up the gui for the proxy xml editor 
-public class ProxyGUI extends JFrame 
+public class ProxyGUI extends JFrame implements WindowListener 
 {
 	private static final long serialVersionUID = 1L;
 	private JPanel main_window = null;
@@ -179,7 +181,13 @@ public class ProxyGUI extends JFrame
 	private JButton start_proxy = null;
 	private JButton stop_proxy = null;
 	private JButton upload_portal = null;
-
+	private JButton save_portal = null;
+	
+	public static void main (String [] args)
+	{
+		//call to constructor to start the program, needed to export program into jar
+		ProxyGUI start = new ProxyGUI();
+	}
 	public ProxyGUI() 
 	{
 		super();
@@ -193,7 +201,9 @@ public class ProxyGUI extends JFrame
 		this.setSize(825,600);
 		this.setContentPane(getJContentPane());
 		this.setTitle("FlexTPS Editor");
-		
+		this.setVisible(true);
+		addWindowListener(this);
+		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		//makes the menu bar
 		menuBar = new JMenuBar();
 		this.setJMenuBar(menuBar);
@@ -289,6 +299,7 @@ public class ProxyGUI extends JFrame
 			main_window.add(getJButton8(), null);
 			main_window.add(getJButton9(), null);
 			main_window.add(getJButton10(), null);
+			main_window.add(getJButton11(), null);
 			main_window.add(getCheckBox(), null);
 			main_window.add(getCheckBox2(), null);
 			main_window.add(getCheckBox3(), null);
@@ -1205,7 +1216,7 @@ public class ProxyGUI extends JFrame
 		return feedname;
 	}
 	
-	//make button to save to server, trouble "repainting" after clearing of jlist
+	//make button to save to arraylist, commented out saving if only if not empty in case it has to be used in future use for some reason, but as of now saving a file first checks if something is not empty before writing the xml node
 	private JButton getJButton() 
 	{
 		if (save == null) 
@@ -1257,13 +1268,13 @@ public class ProxyGUI extends JFrame
 					proxy.proxies.get(selected).ip = ips.getText();
 					proxy.proxies.get(selected).source_ip = sourceip.getText();
 					proxy.proxies.get(selected).max_connections = max_connections.getText();
-					if(!sourceport.getText().isEmpty())
+					//if(!sourceport.getText().isEmpty())
 						proxy.proxies.get(selected).source_port = sourceport.getText();
-					if(!sourceid.getText().isEmpty())
+					//if(!sourceid.getText().isEmpty())
 						proxy.proxies.get(selected).source_id = sourceid.getText();
-					if(!sourcewidth.getText().isEmpty())
+					//if(!sourcewidth.getText().isEmpty())
 						proxy.proxies.get(selected).source_width = sourcewidth.getText();
-					if(!sourceheight.getText().isEmpty())
+					//if(!sourceheight.getText().isEmpty())
 						proxy.proxies.get(selected).source_height = sourceheight.getText();
 					proxy.proxies.get(selected).scale_factor = (String) scalefactor.getSelectedItem();
 					proxy.proxies.get(selected).source_fps = (String) sourcefps.getSelectedItem();
@@ -1273,11 +1284,11 @@ public class ProxyGUI extends JFrame
 					if(bottype.getSelectedIndex() != 0)
 					{
 						proxy.proxies.get(selected).bot_protocol = (String) botprotocol.getSelectedItem();
-						if(!botid.getText().isEmpty())
+						//if(!botid.getText().isEmpty())
 							proxy.proxies.get(selected).bot_id = botid.getText();
-						if(!botip.getText().isEmpty())
+						//if(!botip.getText().isEmpty())
 							proxy.proxies.get(selected).bot_ip = botip.getText();
-						if(!botport.getText().isEmpty())
+						//if(!botport.getText().isEmpty())
 							proxy.proxies.get(selected).bot_port = botport.getText();
 					}
 					else
@@ -1607,6 +1618,40 @@ public class ProxyGUI extends JFrame
 		return upload_portal;
 	}
 	
+	//button that will upload the portal file 
+	private JButton getJButton11() 
+	{
+		if (save_portal == null) 
+		{
+			save_portal = new JButton();
+			save_portal.setBounds(new Rectangle(495, 315, 130, 25));
+			save_portal.setText("Save to Portal");
+			save_portal.addMouseListener(new java.awt.event.MouseAdapter() 
+			{
+				public void mousePressed(java.awt.event.MouseEvent e) 
+				{
+					confirm = new JOptionPane();
+					confirm.setSize(new Dimension(119, 69));
+					yes = JOptionPane.showConfirmDialog(confirm,"Upload " + "file" +"?","Upload",JOptionPane.YES_NO_OPTION);
+				if(yes == JOptionPane.YES_OPTION)
+				{
+				try
+			{
+			    String sys_path = "/opt/flexTPS";
+				proxy.uploadBackPortal("/portal/etc/conf","portal.xml");
+			}
+				catch(Exception e1)
+				 {
+					failed = new JOptionPane();
+					failed.setSize(new Dimension(119, 69));
+					JOptionPane.showMessageDialog(failed, "Failed to upload file " + "file");
+					System.out.println(e1);
+				 }
+					}}});
+			}
+		return save_portal;
+	}
+	
 	//button that will stop the portal
 	private JButton getJButton9() 
 	{
@@ -1654,6 +1699,52 @@ public class ProxyGUI extends JFrame
 				failed.setSize(new Dimension(119, 69));
 				JOptionPane.showMessageDialog(failed, "Failed to download file " + proxy.remotefile);
 			 }
+	}
+	//had to include due to window listener, serves no purpose as of now
+	@Override
+	public void windowActivated(WindowEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+	//when window closes, this makes it clean up all temp files, as well as free up system resoucres and dispose of the jframe
+	@Override
+	public void windowClosed(WindowEvent e) 
+	{
+		proxy.delete();
+		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);	
+		this.dispose();
+	}
+	//when window closing, this makes it clean up all temp files, as well as free up system resoucres and dispose of the jframe
+	@Override
+	public void windowClosing(WindowEvent e) 
+	{
+		proxy.delete();
+		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);	
+		this.dispose();
+	}
+	//had to include due to window listener, serves no purpose as of now
+	@Override
+	public void windowDeactivated(WindowEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+	//had to include due to window listener, serves no purpose as of now
+	@Override
+	public void windowDeiconified(WindowEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+	//had to include due to window listener, serves no purpose as of now
+	@Override
+	public void windowIconified(WindowEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+	//had to include due to window listener, serves no purpose as of now
+	@Override
+	public void windowOpened(WindowEvent e) {
+		// TODO Auto-generated method stub
+		
 	}
 }
 
@@ -2239,6 +2330,71 @@ class FlexTPSProxy
 		delete();
 		} 
 	
+	//the code to upload a file to a server that is not saved locally 
+	void uploadBackPortal(String path, String file) throws JSchException, SftpException, IOException
+	{
+		String localFile = "~portal.xml";
+		//localsave = new File(localFile);
+        String fname = localFile;
+        try
+        {
+        	 FileOutputStream fileOut = new FileOutputStream(fname);
+             PrintStream oos = new PrintStream (fileOut);
+             oos.println("<portal>");
+             oos.println();
+    		 oos.println("\t<site-name>" + gui.sitename.getText() + "</site-name>"); 
+    		 oos.println("\t<site-ip>" + gui.siteip.getText() + "</site-ip>");
+    		 oos.println("\t<site-admin-email>" + gui.siteadmin.getText() + "</site-admin-email>");
+    		 oos.println("\t<dvr>" + "</dvr>"); 
+             for(int i = 0; i < proxies.size();i++)
+             {
+            	 if(proxies.get(i).useInPortal && !proxies.get(i).id.isEmpty())
+            	 {
+            		 proxies.get(i).printPortalproxy(oos);
+            	 }
+             }
+             oos.println("<group>");
+             oos.println("\t<id>" + gui.groupname.getText() + "</id>");
+             oos.println("<feed>");
+             oos.println("\t<id>" + gui.feedname.getText() + "</id>");
+             for(int i = 0; i < proxies.size();i++)
+             {
+            	 if(proxies.get(i).useInPortal && !proxies.get(i).id.isEmpty())
+            	 {
+            		 proxies.get(i).printPortalstream(oos);
+            	 }
+             }
+             oos.println("</feed>");
+             oos.println("<sections>");
+             oos.println("\t<id>local_video</id>");
+             oos.println("\t<id>embedded_local_video</id>");
+             oos.println("</sections>");
+             oos.println("<users>");
+             oos.println("\t<id>*</id>");
+             oos.println("</users>");
+             oos.println("</group>");
+             oos.println("</portal>");
+             oos.close();
+         } catch (FileNotFoundException e) { 
+             System.out.println(e);   
+         } catch (IOException e) { 
+        	 StringWriter sw = new StringWriter();
+        	 PrintWriter pw = new PrintWriter(sw);
+        	 e.printStackTrace(pw);
+        	 System.out.println("Error = " + sw.toString());
+        	 }
+		remoteDirectory = sys_path;
+		this.login.channel = (ChannelSftp)login.session.openChannel("sftp"); 
+		login.channel.connect(); 
+		remoteDirectory = remoteDirectory + path;
+		login.channel.cd(remoteDirectory); 
+		FileInputStream fd = new FileInputStream(localFile);
+		System.out.println("Dir: " + remoteDirectory);
+		System.out.println("File: " + file);
+		login.channel.put(fd,file); 
+		fd.close();
+		delete();
+		} 
 	//this is the method that will be used to save a portal xml file locally
 	void saveLocalportal()
 	{
