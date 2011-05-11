@@ -1,9 +1,12 @@
 					/************************************	
 					 * FlexTPS editor 					*
 					 * Jason Ricles						*
-					 * Last Edit: 4/26/11	            *
+					 * Last Edit: 4/28/11	            *
 					 ************************************/
-//still need to implement some of the buttons, such as save to server, and upload local, as well as change max connections listener
+/* Some of the code can be vastly improve by making functions that pass in strings or booleans to decide what to execute, such as one function to print out a failure message with a string passed into it, instead of functions with a string for each case
+found this out too late in the project and did not want to break the code since i would lose time, but this can be vastly improve in the future versions if you have the time to fool around with the code.
+also you should change the name of some functions in the future mainly the gui ones to give more detail other than "getJButton" and the such to improve code readability.
+Errors: need to fix it allowing a user to save a file with no proxies in it, also the connection seems to lose its handle after x amount of portal/proxy uploads and stop and starts */
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Insets;
@@ -67,7 +70,12 @@ import com.jcraft.jsch.Session;
 import com.jcraft.jsch.SftpException;
 import javax.swing.JList;
 
-//class that sets up the gui for the proxy xml editor 
+/**class that sets up the gui for the proxy xml editor
+ * 
+ * @author Jason Ricles 
+ * @version 1.0 4/28/11
+ *
+ */
 public class ProxyGUI extends JFrame implements WindowListener 
 {
 	private static final long serialVersionUID = 1L;
@@ -182,12 +190,21 @@ public class ProxyGUI extends JFrame implements WindowListener
 	private JButton stop_proxy = null;
 	private JButton upload_portal = null;
 	private JButton save_portal = null;
-	
+	private JButton restart_portal = null;
+
+	/**
+	 * Entry point
+	 * @param args
+	 */
 	public static void main (String [] args)
 	{
 		//call to constructor to start the program, needed to export program into jar
 		ProxyGUI start = new ProxyGUI();
 	}
+	
+	/**
+	 * Constructor to call the super, and call intilize to make the gui
+	 */
 	public ProxyGUI() 
 	{
 		super();
@@ -196,6 +213,9 @@ public class ProxyGUI extends JFrame implements WindowListener
 		proxy.gui = this;
 	}
 	
+	/**
+	 * this method will intilize the gui, as well as the menu bar to save files and connect to the shh server
+	 */
 	void initialize() 
 	 {
 		this.setSize(825,600);
@@ -253,6 +273,10 @@ public class ProxyGUI extends JFrame implements WindowListener
 	}
 	
 	//method that sets up the content pane with calls to getters 
+	/**
+	 * This is the method that adds all the interactive items to the JContentPane 
+	 * @return JContentPane
+	 */
 	private JPanel getJContentPane() 
 	{
 		if (main_window == null) 
@@ -300,6 +324,7 @@ public class ProxyGUI extends JFrame implements WindowListener
 			main_window.add(getJButton9(), null);
 			main_window.add(getJButton10(), null);
 			main_window.add(getJButton11(), null);
+			main_window.add(getJButton12(), null);
 			main_window.add(getCheckBox(), null);
 			main_window.add(getCheckBox2(), null);
 			main_window.add(getCheckBox3(), null);
@@ -333,6 +358,13 @@ public class ProxyGUI extends JFrame implements WindowListener
 	}
 		
 	//adds a jlist with all the ips
+	/** 
+	 * This is the method that adds to the JList all the ips when a user downloads a proxy xml file, and enables all the gui fields for a proxy.
+	 * @return JScrollPane
+	 * @see #proxy
+	 * @see #cameralist
+	 * @see #place
+	 */
 	public JScrollPane getJPane() {
 		if (cameralist == null) {
 		    proxyListModel = new DefaultListModel();
@@ -563,6 +595,10 @@ public class ProxyGUI extends JFrame implements WindowListener
 	}
 	
 	//label for scale factor
+	/**
+	 * This is the method that makes the jlabel beside the scale factor item, to mark were the scale factor is
+	 * @return JLabel
+	 */
 	private JLabel getJLabel15() 
 	{
 		if (scalefactor_label == null) {
@@ -574,6 +610,10 @@ public class ProxyGUI extends JFrame implements WindowListener
 	}
 	
 	//scale factor combobox 
+	/**
+	 * This is the method that will make the combox for the scale factor, in which an array of the numbers that are only allowed are put into the combobox for the user to select from
+	 * @return JComboBox
+	 */
 	public JComboBox getJcombobox()
 	{
 		if(scalefactor == null)
@@ -587,6 +627,10 @@ public class ProxyGUI extends JFrame implements WindowListener
 	}
 	
 	//jlabel for source fps
+	/**
+	 * This will make the label beside the source fps box, to mark and let the user know where to edit the source fps
+	 * @return JLabel
+	 */
 	private JLabel getJLabel16() 
 	{
 		if (sourcefps_label == null) {
@@ -598,6 +642,10 @@ public class ProxyGUI extends JFrame implements WindowListener
 	}
 	
 	//sourcefps combobox 
+	/**
+	 * This will make the combobox to allow the use to select the fps for the camera with the given numbers in the scale array
+	 * @return JComboBox
+	 */
 	public JComboBox getJcombobox1()
 	{
 		if(sourcefps == null)
@@ -611,6 +659,10 @@ public class ProxyGUI extends JFrame implements WindowListener
 	}
 	
 	//jlabel for source protocol
+	/**
+	 * This will make the jlabel for the source protocol box, so the user will know where they can edit the source protocol
+	 * @return JLabel
+	 */
 	private JLabel getJLabel17() 
 	{
 		if (sourceprotocol_label == null) {
@@ -622,6 +674,10 @@ public class ProxyGUI extends JFrame implements WindowListener
 	}
 	
 	//sourceprotocol combobox
+	/**
+	 * Makes the combobox for the source protocol, in which the user can only select either http or https
+	 * @return JComboBox
+	 */
 	public JComboBox getJcombobox2()
 	{
 		if(sourceprotocol == null)
@@ -635,6 +691,10 @@ public class ProxyGUI extends JFrame implements WindowListener
 	}
 	
 	//label for robot protocol
+	/**
+	 * Makes the label for the robotic protocol box so if the user needs to edit the robotic protocol they know where to edit it.
+	 * @return JLabel
+	 */
 	private JLabel getJLabel19() 
 	{
 		if (botprotocol_label == null) {
@@ -646,6 +706,11 @@ public class ProxyGUI extends JFrame implements WindowListener
 	}
 	
 	//botprotocol combobox
+	/**
+	 * Makes the combobox for the robotic protocol in which the user can only select http or https, and is only enabled when robotic controls are enabled
+	 * @return JComboBox
+	 * @see #enableBotscontrols()
+	 */
 	public JComboBox getJcombobox3()
 	{
 		if(botprotocol == null)
@@ -659,6 +724,10 @@ public class ProxyGUI extends JFrame implements WindowListener
 	}
 	
 	//label for sourcetype
+	/**
+	 * Makes the label for the source type, so the user where know where to edit the source type
+	 * @return JLabel
+	 */
 	private JLabel getJLabel18() 
 	{
 		if (sourcetype_label == null) {
@@ -670,6 +739,10 @@ public class ProxyGUI extends JFrame implements WindowListener
 	}
 	
 	//sourcetype combobox
+	/**
+	 * Makes the combobox for the source type, and fills with the source types from which the user can select from
+	 * @return JComboBox
+	 */
 	public JComboBox getJcombobox4()
 	{
 		if(sourcetype == null)
@@ -683,6 +756,11 @@ public class ProxyGUI extends JFrame implements WindowListener
 	}
 	
 	//label for robot type
+	/**
+	 * Makes the label for the robotic type, so the user knows where to edit the robotic type
+	 * @return JLabel
+	 * @see #enableBotscontrols()
+	 */
 	private JLabel getJLabel20() 
 	{
 		if (bottype_label == null) {
@@ -694,6 +772,11 @@ public class ProxyGUI extends JFrame implements WindowListener
 	}
 	
 	//robotictype combobox
+	/**
+	 * Makes the combobox in which the user will select the robotic type from the predetermined types to be put into the combobox, only enabaled when robotic controls are true
+	 * @return JComboBox
+	 * @see #enableBotscontrols()
+	 */
 	public JComboBox getJcombobox5()
 	{
 		if(bottype == null)
@@ -710,6 +793,9 @@ public class ProxyGUI extends JFrame implements WindowListener
 		return bottype;
 	}
 	
+	/**
+	 * This will enabled the robotic controls, if a robotic type is select, else will disable the robotic controls if no robot type is selected
+	 */
 	private void enableBotscontrols()
 	{
 		if(bottype.getSelectedIndex() != 0)
@@ -729,6 +815,10 @@ public class ProxyGUI extends JFrame implements WindowListener
 	}
 	
 	//label for persistants 
+	/**
+	 * makes the label for persistants, so the user knows where persistance is if they want to edit it
+	 * @return Jlabel
+	 */
 	private JLabel getJLabel1() 
 	{
 		if (pers_label == null) {
@@ -740,6 +830,10 @@ public class ProxyGUI extends JFrame implements WindowListener
 	}
 	
 	//change persistants to
+	/** 
+	 * Allows the user to turn persistants on or off through the use of a check box where true if checked and false if not checked
+	 * @return JCheckBox
+	 */
 	private JCheckBox getCheckBox()
 	{
 		pers_true = new JCheckBox("true");
@@ -750,6 +844,10 @@ public class ProxyGUI extends JFrame implements WindowListener
 	}
 	
 	//label for exit on failure
+	/**
+	 * Makes the label for exit on failure, so where the user knows where they can edit exit on failure
+	 * @return JLabel
+	 */
 	private JLabel getJLabel9() 
 	{
 		if (exitfail_label == null) {
@@ -761,6 +859,10 @@ public class ProxyGUI extends JFrame implements WindowListener
 	}
 	
 	//change exit on fail to
+	/** 
+	 * Allows the user to turn exit on failure on or off through the use of a check box where true if checked and false if not checked
+	 * @return JCheckBox
+	 */
 	private JCheckBox getCheckBox2()
 	{
 		exit_fail = new JCheckBox("true");
@@ -771,6 +873,10 @@ public class ProxyGUI extends JFrame implements WindowListener
 	}
 	
 	//verbose-log label
+	/**
+	 * Makes the label for verbose log so the user knows where they can edit the value
+	 * @return JLabel
+	 */
 	private JLabel getJLabel13() 
 	{
 		if (verboselog_label == null) {
@@ -782,6 +888,10 @@ public class ProxyGUI extends JFrame implements WindowListener
 	}
 	
 	//change verbose-log on fail to
+	/** 
+	 * Allows the user to turn verbose log on or off through the use of a check box where true if checked and false if not checked
+	 * @return JCheckBox
+	 */
 	private JCheckBox getCheckBox3()
 	{
 		verb_log = new JCheckBox("true");
@@ -792,6 +902,10 @@ public class ProxyGUI extends JFrame implements WindowListener
 	}
 	
 	//status-log label
+	/**
+	 * Makes the label for status log, so the user knows where to edit the status log value
+	 * @return JLabel
+	 */
 	private JLabel getJLabel14() 
 	{
 		if (statuslog_label == null) {
@@ -803,6 +917,10 @@ public class ProxyGUI extends JFrame implements WindowListener
 	}
 	
 	//change status-log on fail to
+	/** 
+	 * Allows the user to turn status log on or off through the use of a check box where true if checked and false if not checked
+	 * @return JCheckBox
+	 */
 	private JCheckBox getCheckBox4()
 	{
 		stat_log = new JCheckBox("true");
@@ -813,6 +931,10 @@ public class ProxyGUI extends JFrame implements WindowListener
 	}
 	
 	//port in use label
+	/**
+	 * Makes the label for the use in portal, so the user knows where they can edit this value if they need to
+	 * @return JLabel
+	 */
 	private JLabel getJLabel22() 
 	{
 		if (portinuse_label == null) {
@@ -824,6 +946,10 @@ public class ProxyGUI extends JFrame implements WindowListener
 	}
 	
 	//port in use jcheck box
+	/** 
+	 * Allows the user to turn use in portal on or off through the use of a check box where true if checked and false if not checked
+	 * @return JCheckBox
+	 */
 	private JCheckBox getCheckBox5()
 	{
 		port_inuse = new JCheckBox("true");
@@ -838,6 +964,10 @@ public class ProxyGUI extends JFrame implements WindowListener
 	}
 
 	//sets the port controls enabled or disabled when the check box is clicked
+	//dont think i need the commented code anymore, but kept it in just in case, i needed to test something
+	/**
+	 * This will enable all the gui items that can be edited for the portal, if the use in portal checkbox is true
+	 */
 	public void enablePortcontrols()
 	{
 		//if(port_inuse.getSelectedObjects() == null)
@@ -859,6 +989,10 @@ public class ProxyGUI extends JFrame implements WindowListener
 	}
 	
 	//label for port
+	/**
+	 * Makes the label for the port, so the user knows where they can edit the port value
+	 * @return JLabel
+	 */
 	private JLabel getJLabel() 
 	{
 		if (port_label == null) {
@@ -870,6 +1004,12 @@ public class ProxyGUI extends JFrame implements WindowListener
 	}
 	
 	//sets the port number, if no proxy is selected is defaulted to 3000
+	/**
+	 * This makes the text field where the port will be held and entered, always defaults to max highest ports number + 1, also each port has to be unique and will not allow to ports of the same value to be used
+	 * @return JTextField
+	 * @see #high_port
+	 * @see #port_num
+	 */
 	private JTextField getTextField()
 	{
 		ports = new JTextField();
@@ -881,6 +1021,10 @@ public class ProxyGUI extends JFrame implements WindowListener
 	}
 	
 	//label for ip
+	/**
+	 * This will make the label for the ip of the proxy, so the user will know where they can edit the ip
+	 * @return JLabel
+	 */
 	private JLabel getJLabel2() 
 	{
 		if (ip_label == null) {
@@ -892,6 +1036,11 @@ public class ProxyGUI extends JFrame implements WindowListener
 	}
 	
 	//presents the default ip in a jtextfield
+	/**
+	 * This is the text field that will hold the ip of the proxy, as well as where the user can change the ip of the proxy, defaults to blank
+	 * @return JTextField
+	 * @see #default_ip
+	 */
 	private JTextField getTextField1()
 	{
 		ips = new JTextField();
@@ -901,7 +1050,11 @@ public class ProxyGUI extends JFrame implements WindowListener
 		return ips;
 	}
 	
-	//lable for max connections
+	//label for max connections
+	/**
+	 * This will make the label for the max connections within the gui, so the user knows where they can change the value of max connections
+	 * @return JLabel
+	 */
 	private JLabel getJLabel3() 
 	{
 		if (maxconnect_label == null) {
@@ -913,6 +1066,11 @@ public class ProxyGUI extends JFrame implements WindowListener
 	}
 	
 	//jtextfield for maxconnections
+	/**
+	 * This is the text field that will hold the value of the max number of connections, as well as where the user can edit the value of the max number of connections. Always defaults to 100
+	 * @return JTextField
+	 * @see #default_maxconnect
+	 */
 	private JTextField getTextField2()
 	{
 		max_connections = new JTextField();
@@ -923,6 +1081,10 @@ public class ProxyGUI extends JFrame implements WindowListener
 	}
 	
 	//label for sourceip
+	/**
+	 * Makes the label for the user to see where the source ip can be edited
+	 * @return JLabel
+	 */
 	private JLabel getJLabel4() 
 	{
 		if (sourceip == null) {
@@ -934,6 +1096,11 @@ public class ProxyGUI extends JFrame implements WindowListener
 	}
 	
 	//jtext field for sourceip
+	/**
+	 * Makes the text field where the user can see and edit the value of the sourceip, is always defaulted to blank
+	 * @return JTextField
+	 * @see #default_sourceip
+	 */
 	private JTextField getTextField3()
 	{
 		sourceip = new JTextField();
@@ -944,6 +1111,10 @@ public class ProxyGUI extends JFrame implements WindowListener
 	}
 	
 	//label for sourceport
+	/**
+	 * This makes the label for the source port, so the user knows where this box is
+	 * @return JLabel
+	 */
 	private JLabel getJLabel5() 
 	{
 		if (sourceport_label == null) {
@@ -955,6 +1126,11 @@ public class ProxyGUI extends JFrame implements WindowListener
 	}
 	
 	//jtext field for sourceport
+	/**
+	 * Makes the text field for the source port, so the user can see the value of the port as well as edit it if they want to
+	 * @return JTextField
+	 * @see #default_sourceport
+	 */
 	private JTextField getTextField4()
 	{
 		sourceport = new JTextField();
@@ -965,6 +1141,10 @@ public class ProxyGUI extends JFrame implements WindowListener
 	}
 	
 	//label for sourceid
+	/**
+	 * this is the label for the source id, so the user knows where this box is
+	 * @return JLabel
+	 */
 	private JLabel getJLabel6() 
 	{
 		if (sourceid_label == null) {
@@ -976,6 +1156,11 @@ public class ProxyGUI extends JFrame implements WindowListener
 	}
 	
 	//jtext field for sourceid
+	/**
+	 * Makes the text field foe the source id, which defaults to blank, and lets the user edit or see the value of the source id as well
+	 * @return JTextField
+	 * @see #default_sourceid
+	 */
 	private JTextField getTextField5()
 	{
 		sourceid = new JTextField();
@@ -986,6 +1171,10 @@ public class ProxyGUI extends JFrame implements WindowListener
 	}
 	
 	//label for sourcewidth
+	/**
+	 * Makes the label for source width so the user knows where it is
+	 * @return JLabel
+	 */
 	private JLabel getJLabel7() 
 	{
 		if (sourcewidth_label == null) {
@@ -997,6 +1186,10 @@ public class ProxyGUI extends JFrame implements WindowListener
 	}
 	
 	//textfield for sourcewidth
+	/** This function returns a JTextField for the source width
+	 * @return JTextField
+	 * @see #default_sourcewidth
+	 */
 	private JTextField getTextField6()
 	{
 		sourcewidth = new JTextField();
@@ -1007,6 +1200,10 @@ public class ProxyGUI extends JFrame implements WindowListener
 	}
 	
 	//label for id
+	/**
+	 * This makes the label for the port id, so the user knows where to find the port id
+	 * @return JLabel
+	 */
 	private JLabel getJLabel21() 
 	{
 		if (id_label == null) {
@@ -1018,6 +1215,10 @@ public class ProxyGUI extends JFrame implements WindowListener
 	}
 	
 	//textfield for portid
+	/**
+	 * This makes the text field for the port id, which is defualted to blank, used for the user to see and edit the port id
+	 * @return JTextField 
+	 */
 	private JTextField getTextField11()
 	{
 		port_id = new JTextField();
@@ -1028,6 +1229,10 @@ public class ProxyGUI extends JFrame implements WindowListener
 	}
 	
 	//label for sourceheight
+	/**
+	 * This makes the label for the source height so the user knows where the source height box is
+	 * @return JLabel
+	 */
 	private JLabel getJLabel8() 
 	{
 		if (sourceheight_label == null) {
@@ -1039,6 +1244,11 @@ public class ProxyGUI extends JFrame implements WindowListener
 	}
 	
 	//jtext field for sourceheight
+	/**
+	 * This makes the text field for the source height, and defaults to blank, this is where the user can edit and see the source height
+	 * @return JTextField
+	 * @see #default_sourceheight
+	 */
 	private JTextField getTextField7()
 	{
 		sourceheight = new JTextField();
@@ -1049,6 +1259,10 @@ public class ProxyGUI extends JFrame implements WindowListener
 	}
 	
 	//label for robot ip
+	/**
+	 * This makes the label for the robot ip so the user knows where this box is if they want to see or edit it
+	 * @return JLabel 
+	 */
 	private JLabel getJLabel10() 
 	{
 		if (botip_label == null) {
@@ -1060,6 +1274,12 @@ public class ProxyGUI extends JFrame implements WindowListener
 	}
 	
 	//text field for robotip
+	/**
+	 * This makes the text field for the robot ip which is only enabled if a robotic type is selected, defaulted to blank
+	 * @return JTextField
+	 * @see #enableBotscontrols()
+	 * @see #default_botip
+	 */
 	private JTextField getTextField8()
 	{
 		botip = new JTextField();
@@ -1070,6 +1290,10 @@ public class ProxyGUI extends JFrame implements WindowListener
 	}
 	
 	//label for robot port
+	/**
+	 * This makes the label for the robot port so the user knows where this box is if they want to see or edit it
+	 * @return JLabel 
+	 */
 	private JLabel getJLabel11() 
 	{
 		if (botport_label == null) {
@@ -1080,7 +1304,13 @@ public class ProxyGUI extends JFrame implements WindowListener
 		return botport_label;
 	}
 	
-	//tetx field for robot port
+	//text field for robot port
+	/**
+	 * This makes the text field for the robot port which is only enabled if a robotic type is selected, defaulted to blank
+	 * @return JTextField
+	 * @see #enableBotscontrols()
+	 * @see #default_botport
+	 */
 	private JTextField getTextField9()
 	{
 		botport = new JTextField();
@@ -1091,6 +1321,10 @@ public class ProxyGUI extends JFrame implements WindowListener
 	}
 	
 	//label for robot id
+	/**
+	 * This makes the label for the robot id so the user knows where this box is if they want to see or edit it
+	 * @return JLabel 
+	 */
 	private JLabel getJLabel12() 
 	{
 		if (botid_label == null) {
@@ -1102,6 +1336,12 @@ public class ProxyGUI extends JFrame implements WindowListener
 	}
 	
 	//text field for robot id
+	/**
+	 * This makes the text field for the robot id which is only enabled if a robotic type is selected, defaulted to blank
+	 * @return JTextField
+	 * @see #enableBotscontrols()
+	 * @see #default_botid
+	 */
 	private JTextField getTextField10()
 	{
 		botid = new JTextField();
@@ -1112,6 +1352,10 @@ public class ProxyGUI extends JFrame implements WindowListener
 	}
 	
 	//jlabel for sitename
+	/**
+	 * This makes the label for the sitename for the portal so the user knows where this box is if they want to see or edit it
+	 * @return JLabel 
+	 */
 	private JLabel getJLabel23() 
 	{
 		if (sitename_label == null) {
@@ -1123,6 +1367,12 @@ public class ProxyGUI extends JFrame implements WindowListener
 	}
 	
 	//presents the site name
+	/**
+	 * This makes the text field for the site name, only enabled if use in portal is selected
+	 * @return JTextField
+	 * @see #enablePortcontrols()
+	 * @see #default_sitename
+	 */
 	private JTextField getTextField12()
 	{
 		sitename = new JTextField();
@@ -1133,6 +1383,10 @@ public class ProxyGUI extends JFrame implements WindowListener
 	}
 	
 	//jlabel for siteip
+	/**
+	 * This makes the label for the site ip for the portal so the user knows where this box is if they want to see or edit it
+	 * @return JLabel 
+	 */
 	private JLabel getJLabel24() 
 	{
 		if (siteip_label == null) {
@@ -1144,6 +1398,12 @@ public class ProxyGUI extends JFrame implements WindowListener
 	}
 	
 	//jtextfield for siteip
+	/**
+	 * This makes the text field for the site ip, only enabled if use in portal is selected
+	 * @return JTextField
+	 * @see #enablePortcontrols()
+	 * @see #default_siteip
+	 */
 	private JTextField getTextField13()
 	{
 		siteip = new JTextField();
@@ -1154,6 +1414,10 @@ public class ProxyGUI extends JFrame implements WindowListener
 	}
 	
 	//jlabel for groupname
+	/**
+	 * This makes the label for the group name for the portal so the user knows where this box is if they want to see or edit it
+	 * @return JLabel 
+	 */
 	private JLabel getJLabel27() 
 	{
 		if (groupname_label == null) {
@@ -1165,6 +1429,12 @@ public class ProxyGUI extends JFrame implements WindowListener
 	}
 	
 	//jtext field for group name
+	/**
+	 * This makes the text field for the group name, only enabled if use in portal is selected
+	 * @return JTextField
+	 * @see #enablePortcontrols()
+	 * @see #default_groupname
+	 */
 	private JTextField getTextField16()
 	{
 		groupname = new JTextField();
@@ -1175,6 +1445,10 @@ public class ProxyGUI extends JFrame implements WindowListener
 	}
 	
 	//jlabel for siteadmin
+	/**
+	 * This makes the label for the site admin for the portal so the user knows where this box is if they want to see or edit it
+	 * @return JLabel 
+	 */
 	private JLabel getJLabel25() 
 	{
 		if (siteadmin_label == null) {
@@ -1186,6 +1460,12 @@ public class ProxyGUI extends JFrame implements WindowListener
 	}
 	
 	//jtext field for siteadmin email
+	/**
+	 * This makes the text field for the site admin, only enabled if use in portal is selected
+	 * @return JTextField
+	 * @see #enablePortcontrols()
+	 * @see #default_email
+	 */
 	private JTextField getTextField14()
 	{
 		siteadmin = new JTextField();
@@ -1196,6 +1476,10 @@ public class ProxyGUI extends JFrame implements WindowListener
 	}
 	
 	//jlabel for feedname
+	/**
+	 * This makes the label for the feed name for the portal so the user knows where this box is if they want to see or edit it
+	 * @return JLabel 
+	 */
 	private JLabel getJLabel26() 
 	{
 		if (feedname_label == null) {
@@ -1207,6 +1491,11 @@ public class ProxyGUI extends JFrame implements WindowListener
 	}
 	
 	//jtext field for feedname
+	/**
+	 * This makes the text field for the feed name, only enabled if use in portal is selected
+	 * @see #enablePortcontrols()
+	 * @see #default_feedname
+	 */
 	private JTextField getTextField15()
 	{
 		feedname = new JTextField();
@@ -1216,6 +1505,11 @@ public class ProxyGUI extends JFrame implements WindowListener
 		return feedname;
 	}
 	
+	/**
+	 * This makes the button to save into the arraylist the current proxy you have selected and edited in the jlist, on clicking save goes through and pulls all the text and the such from the gui items
+	 * @return JButton
+	 * @see #proxy
+	 */
 	//make button to save to arraylist, commented out saving if only if not empty in case it has to be used in future use for some reason, but as of now saving a file first checks if something is not empty before writing the xml node
 	private JButton getJButton() 
 	{
@@ -1313,6 +1607,14 @@ public class ProxyGUI extends JFrame implements WindowListener
 	}
 	
 	//make button to save to server
+	/**
+	 * This makes the button so the user can save the file direclty to the server through the use of a temporary file which will be deleted after upload
+	 * @return JButton
+	 * @see #proxy
+	 * @see #confirm
+	 * @see #failed
+	 * @see #saveserver
+	 */
 	private JButton getJButton1() 
 	{
 		if (saveserver == null) 
@@ -1339,6 +1641,7 @@ public class ProxyGUI extends JFrame implements WindowListener
 							failed = new JOptionPane();
 							failed.setSize(new Dimension(119, 69));
 							JOptionPane.showMessageDialog(failed, "Failed to upload file " + "file");
+							proxy.delete();
 							System.out.println(e1);
 						 }
 			}
@@ -1349,6 +1652,13 @@ public class ProxyGUI extends JFrame implements WindowListener
 	}
 	
 	//make button to download file to fill combo box
+	/**
+	 * This will make the button to download the xml file when connected to the ssh server
+	 * @return JButton
+	 * @see #download
+	 * @see #proxy
+	 * @see #failed
+	 */
 	private JButton getJButton2() 
 	{
 		if (download == null) 
@@ -1379,6 +1689,12 @@ public class ProxyGUI extends JFrame implements WindowListener
 	}
 	
 	//button to upload a local xml file
+	/**
+	 * This makes the button to upload a local file to the xml server, the user selects the file with a file chooser
+	 * @return JButton
+	 * @see #uploadlocal
+	 * @see #proxy
+	 */
 	private JButton getJButton3() 
 	{
 		if (uploadlocal == null) 
@@ -1410,6 +1726,11 @@ public class ProxyGUI extends JFrame implements WindowListener
 	}
 	
 	//button to exit program, deletes all temp files and disconnects everything when run
+	/**
+	 * This makes the button that the user will click when they want to exit the program, calls system exit to do such, as well as a function to make sure the process dies
+	 * @return JButton
+	 * @see #quit
+	 */
 	private JButton getJButton4() 
 	{
 		if (quit == null) 
@@ -1429,6 +1750,12 @@ public class ProxyGUI extends JFrame implements WindowListener
 	}
 	
 	//button to add to xml file
+	/**
+	 * This makes the button where the user can then choose to add a proxy to an already downloaded xml file, or to a new xml file, will also then resort the port nums to find the highest one
+	 * @return JButton
+	 * @see #add
+	 * @see #port_nums
+	 */
 	private JButton getJButton5() 
 	{
 		if (add == null) 
@@ -1465,6 +1792,12 @@ public class ProxyGUI extends JFrame implements WindowListener
 	}
 	
 	//button to delete from xml file
+	/**
+	 * This will make the button that is used to delete a proxy from the list model as well as the array list
+	 * @return JButton
+	 * @see #delete
+	 * @see #proxyListModel
+	 */
 	private JButton getJButton6() 
 	{
 		if (delete == null) 
@@ -1522,6 +1855,12 @@ public class ProxyGUI extends JFrame implements WindowListener
 	}
 	
 	//button that will download the portal file 
+	/**
+	 * This will make the button to download the portal file (all it does for now and just download and delete file)
+	 * @return JButton
+	 * @see #download_portal
+	 * @see #proxy
+	 */
 	private JButton getJButton7() 
 	{
 		if (download_portal == null) 
@@ -1560,6 +1899,11 @@ public class ProxyGUI extends JFrame implements WindowListener
 	}
 	
 	//button that will start the portal
+	/**
+	 * This makes the button that the user will click if they want to start the proxy
+	 * @return JButton
+	 * @see #start_proxy
+	 */
 	private JButton getJButton8() 
 	{
 		if (start_proxy == null) 
@@ -1573,7 +1917,7 @@ public class ProxyGUI extends JFrame implements WindowListener
 				{
 					try
 					{
-						proxy.start_proxy("sudo /sbin/service flextps_proxies start\n");
+						proxy.start_proxy("sudo /sbin/service flextps_proxies start\n","Proxy Started","Failed to stop Proxy");
 					}
 					catch (Exception e1)
 					{
@@ -1588,6 +1932,12 @@ public class ProxyGUI extends JFrame implements WindowListener
 	}
 	
 	//button that will upload the portal file 
+	/**
+	 * This will make the button that the user will click to upload a local portal file
+	 * @return JButton
+	 * @see #upload_portal
+	 * @see #proxy
+	 */
 	private JButton getJButton10() 
 	{
 		if (upload_portal == null) 
@@ -1619,6 +1969,13 @@ public class ProxyGUI extends JFrame implements WindowListener
 	}
 	
 	//button that will upload the portal file 
+	/**
+	 * This will make the button for the user to directly upload a portal file that is not saved locally on the system
+	 * @return JButton
+	 * @see #save_portal
+	 * @see #failed
+	 * @see #proxy
+	 */
 	private JButton getJButton11() 
 	{
 		if (save_portal == null) 
@@ -1645,6 +2002,7 @@ public class ProxyGUI extends JFrame implements WindowListener
 					failed = new JOptionPane();
 					failed.setSize(new Dimension(119, 69));
 					JOptionPane.showMessageDialog(failed, "Failed to upload file " + "file");
+					proxy.delete();
 					System.out.println(e1);
 				 }
 					}}});
@@ -1652,7 +2010,47 @@ public class ProxyGUI extends JFrame implements WindowListener
 		return save_portal;
 	}
 	
-	//button that will stop the portal
+	//button to restart portal, on click calls start porxy function and just passes in a different command to have it restart a portal
+	/**
+	 * This will makes the button that is used to restart the portal
+	 * @return JButton
+	 * @see #restart_portal
+	 * @see #failed
+	 */
+	private JButton getJButton12() 
+	{
+		if (restart_portal == null) 
+		{
+			restart_portal = new JButton();
+			restart_portal.setBounds(new Rectangle(630, 315, 125, 25));
+			restart_portal.setText("Restart Portal");
+			restart_portal.addMouseListener(new java.awt.event.MouseAdapter() 
+			{
+				public void mouseClicked(java.awt.event.MouseEvent e) 
+				{
+					try
+					{
+						proxy.start_proxy("sudo /sbin/service flextps_httpd restart\n","Portal restarted","Failed to restart portal");
+					}
+					catch (Exception e1)
+					{
+						failed = new JOptionPane();
+						failed.setSize(new Dimension(119, 69));
+						JOptionPane.showMessageDialog(failed, "Failed to restart portal");
+					}
+				}
+			});
+			}
+		return restart_portal;
+	}
+	
+	//button that will stop the proxy
+	/**
+	 * This will make the button that when clicked will stop the proxies
+	 * @return JButton
+	 * @see #start_proxy
+	 * @see #failed
+	 */
 	private JButton getJButton9() 
 	{
 		if (stop_proxy == null) 
@@ -1666,7 +2064,7 @@ public class ProxyGUI extends JFrame implements WindowListener
 				{
 					try
 					{
-						proxy.stop_proxy("sudo /sbin/service flextps_proxies stop\n");
+						proxy.stop_proxy("sudo /sbin/service flextps_proxies stop\n","Proxy stopped");
 					}
 					catch (Exception e1)
 					{
@@ -1681,6 +2079,10 @@ public class ProxyGUI extends JFrame implements WindowListener
 	}
 	
 	//prints out message if combobox is already filled
+	/**
+	 * This method is used for when the xml file has already been downloaded, it will clear the list model redownload the file so that the same proxies do not appear more than once in the gui, and tells if downloading failed
+	 * @see #failed
+	 */
 	void already()
 	{
 		//already_downloaded = new JOptionPane();
@@ -1701,12 +2103,18 @@ public class ProxyGUI extends JFrame implements WindowListener
 			 }
 	}
 	//had to include due to window listener, serves no purpose as of now
+	/**
+	 * 	had to include due to window listener, serves no purpose as of now
+	 */
 	@Override
 	public void windowActivated(WindowEvent e) {
 		// TODO Auto-generated method stub
 		
 	}
 	//when window closes, this makes it clean up all temp files, as well as free up system resoucres and dispose of the jframe
+	/**
+	 * when window closes, this makes it clean up all temp files, as well as free up system resoucres and dispose of the jframe
+	 */
 	@Override
 	public void windowClosed(WindowEvent e) 
 	{
@@ -1715,6 +2123,9 @@ public class ProxyGUI extends JFrame implements WindowListener
 		this.dispose();
 	}
 	//when window closing, this makes it clean up all temp files, as well as free up system resoucres and dispose of the jframe
+	/**
+	 * when window is closing, this makes it clean up all temp files, as well as free up system resoucres and dispose of the jframe
+	 */
 	@Override
 	public void windowClosing(WindowEvent e) 
 	{
@@ -1723,24 +2134,36 @@ public class ProxyGUI extends JFrame implements WindowListener
 		this.dispose();
 	}
 	//had to include due to window listener, serves no purpose as of now
+	/**
+	 * 	had to include due to window listener, serves no purpose as of now
+	 */
 	@Override
 	public void windowDeactivated(WindowEvent e) {
 		// TODO Auto-generated method stub
 		
 	}
 	//had to include due to window listener, serves no purpose as of now
+	/**
+	 * 	had to include due to window listener, serves no purpose as of now
+	 */
 	@Override
 	public void windowDeiconified(WindowEvent e) {
 		// TODO Auto-generated method stub
 		
 	}
 	//had to include due to window listener, serves no purpose as of now
+	/**
+	 * 	had to include due to window listener, serves no purpose as of now
+	 */
 	@Override
 	public void windowIconified(WindowEvent e) {
 		// TODO Auto-generated method stub
 		
 	}
 	//had to include due to window listener, serves no purpose as of now
+	/**
+	 * 	had to include due to window listener, serves no purpose as of now
+	 */
 	@Override
 	public void windowOpened(WindowEvent e) {
 		// TODO Auto-generated method stub
@@ -1749,6 +2172,9 @@ public class ProxyGUI extends JFrame implements WindowListener
 }
 
 //class to log the user in
+/**
+ * Class that is used for the backend code to log the user in
+ */
 class Login
 {
 	private String host = null;  
@@ -1763,6 +2189,13 @@ class Login
 	boolean good = false;
 	protected ChannelSftp channel = null;
 
+	/**
+	 * Method that is used to connect the user to the ssh server, by calling other methods to get their password and username
+	 * @see #getUserinfo()
+	 * @see #getUserpass()
+	 * @see #channel
+	 * @see #session
+	 */
 	void login()
 	 {
 		 try
@@ -1790,6 +2223,12 @@ class Login
 		 }
 	 }
 	//gets their info
+	/**
+	 * This is the method that is used to get the users information such as the host and the user to log into the shh server through the use of a pop up window
+	 * @return JOptionPane
+	 * @see #host
+	 * @see #user
+	 */
 	private JOptionPane getUserinfo() 
 	{
 			prompt = new JOptionPane();
@@ -1802,6 +2241,11 @@ class Login
 	}
 	
 	//gets their password
+	/**
+	 * This is the method used to get the users password, through the use of a pop up window
+	 * @return JOptionPane
+	 * @see #pass
+	 */
 	@SuppressWarnings("deprecation")
 	private JOptionPane getUserpass() 
 	{
@@ -1817,6 +2261,9 @@ class Login
 	}
 	
 	//confirm login
+	/**
+	 * This is the method that is used to display the pop up when the connection to the server is a sucess 
+	 */
 	void good()
 	{
 		connected = new JOptionPane();
@@ -1826,6 +2273,9 @@ class Login
 	}
 	
 	//confirm no connection happened
+	/**
+	 * This is the method used to display the pop up when it was unable to connection to the shh server
+	 */
 	void bad()
 	{
 		noconnect = new JOptionPane();
@@ -1834,6 +2284,9 @@ class Login
 	}
 	
 	//tell user they are alrady logged into a server
+	/**
+	 * This displays a pop up if a user trys to log into an ssh server when they are already connected to one
+	 */
 	void already()
 	{
 		noconnect = new JOptionPane();
@@ -1842,6 +2295,11 @@ class Login
 	}
 	
 	//logs user out from server
+	/**
+	 * This is the method that is used to log the user out from the ssh server if they decide to dissconnect
+	 * @see #channel
+	 * @see #session
+	 */
 	void logout()
 	{
 		channel.disconnect();
@@ -1854,6 +2312,9 @@ class Login
 }
 
 //class that will be used to get the proxy files, as well as upload the proxy file, where the bulk of the code behind running the program will lay
+/**
+ * This is the class where the backcode of the program to interact with the ssh server, as in upload files, download files, stop and start the server lays
+ */
 class FlexTPSProxy 
 {
 	//have to look over the variables, don't think i need this many, can get quite confusing then
@@ -1896,6 +2357,11 @@ class FlexTPSProxy
 	protected Channel proxy_channel;
 
 	//constructor
+	/**
+	 * This is a contrcutor that sets up some of the variables for the FlexTPS proxy class
+	 * @see #factory
+	 * @see #proxies
+	 */
 	public FlexTPSProxy()
 	{
 		factory = DocumentBuilderFactory.newInstance();
@@ -1903,6 +2369,12 @@ class FlexTPSProxy
 	}
 	
 	//constructor 
+	/**
+	 * Sets up some more vaiables through parameters 
+	 * @param file used to set up a file descriptor 
+	 * @param factory the documentbuilderfactry for the xml file
+	 * @param ip the string for the ip address to use
+	 */
 	public FlexTPSProxy(File file,DocumentBuilderFactory factory,String ip)
 	{
 		this.file = file;
@@ -1910,44 +2382,69 @@ class FlexTPSProxy
 	}
 	
 	//this is the method to start the proxies, and confirms it has started with a popup
-	void start_proxy(String command) throws JSchException, InterruptedException
+	/**
+	 * this is the method to start the proxies or restarts the portal depending on what param is passed, and confirms it has with a popup
+	 * @param command the command for what to do with the proxy or portal
+	 * @param sucess what to print out in the message box if the function works properly without an error 
+	 * @param failure what to print out in the message box if the function throws an error 
+	 * @throws JSchException, InterruptedException 
+	 */
+	void start_proxy(String command, String sucess, String failure) throws JSchException, InterruptedException
 	{
+	    JOptionPane start= new JOptionPane();
+		start.setSize(new Dimension(119, 69));
 		proxy_channel = login.session.openChannel("shell");
 		InputStream input = null;
 	      try 
 	      {   
 	        input = new ByteArrayInputStream(command.getBytes("UTF-8"));    	  
 		  } 
-	      catch (UnsupportedEncodingException e) {}	
+	      catch (UnsupportedEncodingException e) 
+	      {
+			  JOptionPane.showMessageDialog(start, failure);
+	      }	
 	      proxy_channel.setInputStream(input);
 	      proxy_channel.setOutputStream(System.out);      
 	      proxy_channel.connect(3*1000);      
 	      Thread.sleep(1000);
-	      JOptionPane start= new JOptionPane();
-		  start.setSize(new Dimension(119, 69));
-		  JOptionPane.showMessageDialog(start, "Proxy started");
+		  JOptionPane.showMessageDialog(start, sucess);
 	}
 	
 	//this is the method to stop the proxies, and confirms it has started with a popup
-	void stop_proxy(String command) throws JSchException, InterruptedException
+	/**
+	 * this is the method to stop the proxies, and confirms it has with a popup
+	 * @param command the command for what to do with the proxy 
+	 * @param sucess what to print out in the message box if the function works properly without an error 
+	 * @throws JSchException, InterruptedException 
+	 */
+	void stop_proxy(String command, String sucess) throws JSchException, InterruptedException
 	{
+	    JOptionPane start= new JOptionPane();
+		start.setSize(new Dimension(119, 69));
 		proxy_channel = login.session.openChannel("shell");
 		InputStream input = null;
 	      try 
 	      {   
 	        input = new ByteArrayInputStream(command.getBytes("UTF-8"));    	  
 		  } 
-	      catch (UnsupportedEncodingException e) {}	
+	      catch (UnsupportedEncodingException e) 
+	      {
+			  JOptionPane.showMessageDialog(start, "Failed to stop");
+	      }	
 	      proxy_channel.setInputStream(input);
 	      proxy_channel.setOutputStream(System.out);      
 	      proxy_channel.connect(3*1000);      
 	      Thread.sleep(1000);
-	      JOptionPane start= new JOptionPane();
-		  start.setSize(new Dimension(119, 69));
-		  JOptionPane.showMessageDialog(start, "Proxy stopped");
+		  JOptionPane.showMessageDialog(start, sucess);
 	}
 	
 	//method to download proxy files
+	/**
+	 * This is the method that is used to download the get the file from the ssh server 
+	 * @param path this is the path to the file that will be downloaded
+	 * @param remotefile this is the name of the file on the server to download
+	 * @throws JSchException, SftpException, ParserConfigurationException, SAXException, IOException
+	 */
 	void getFile(String path,String remotefile) throws JSchException, SftpException, ParserConfigurationException, SAXException, IOException
 	{
 		remoteDirectory = sys_path;
@@ -1972,13 +2469,20 @@ class FlexTPSProxy
 	}
 	
 	//just gets the proxy elemnts 
+	/**
+	 * Used to get the proxy elements of a file, into a nodelist
+	 * @see #proxy
+	 */
 	void getProxies()
 	{
 		proxy = doc.getElementsByTagName("proxy");
 		add();
 	}
-	
 	//will be used to get the portal elements 
+	/**
+	 * Used to get the portal elements of a file, into a nodelist
+	 * @see #portal
+	 */
 	void getPortals()
 	{
 		portal = doc.getElementsByTagName("portal");
@@ -1986,6 +2490,12 @@ class FlexTPSProxy
 	}
 	
 	//adds all the xml elements to the arraylist and puts the ips in the combo box
+	/**
+	 * This will be used to add the xml elements to the arraylist, and then put the ports into the combobox of the gui, then calls the method to delete the temporary file with the xml information
+	 * @see #proxies
+	 * @see #gui
+	 * @see #delete()
+	 */
 	public void add()
 	{
 		if(gui.downloaded == true)
@@ -2226,6 +2736,9 @@ class FlexTPSProxy
 	}
 		
 	//deletes files that are meant to only be temporary, have to figure out a way as well to call this when (X) is clicked
+	/**
+	 * This is the method that is called when a temporary file needs to be deleted 
+	 */
 	public void delete()
 	{
 		//have to make the string into a file to allow the file to be deleted since you cant not delete a string
@@ -2242,6 +2755,10 @@ class FlexTPSProxy
 	}
 	
 	//this method is to save an xml file locally, having some trouble with this as of now when it goes to the other class
+	/**
+	 * This is the code that will save the file locally on the file system if the user chooses to do so
+	 * @see #fc
+	 */
 	void saveLocal()
 	{
 	    fc = new JFileChooser ();
@@ -2274,6 +2791,11 @@ class FlexTPSProxy
 	
 	
 	//method to choose the file to upload a local file to the server, want to add where you can only see xml files
+	/**
+	 * This is the method where the local file decided by the user to upload, is uploaded 
+	 * @see #fc
+	 * @throws JSchException, SftpException, IOException
+	 */
 	void uploadLocal(String path) throws JSchException, SftpException, IOException
 	{
 		fc = new JFileChooser();
@@ -2296,6 +2818,11 @@ class FlexTPSProxy
 	}
 	
 	//the code to upload a file to a server that is not saved locally 
+	/**
+	 * This is the code that will temporaliry save a proxy file, and then upload that file to the server. Then upon completiton that file will be deleted 
+	 * @see #delete()
+	 * @throws JSchException, SftpException, IOException
+	 */
 	void uploadBack(String path, String file) throws JSchException, SftpException, IOException
 	{
 		String localFile = "~proxies.xml";
@@ -2331,6 +2858,11 @@ class FlexTPSProxy
 		} 
 	
 	//the code to upload a file to a server that is not saved locally 
+	/**
+	 * This is the code that will temporaliry save a portal file, and then upload that file to the server. Then upon completiton that file will be deleted 
+	 * @see #delete()
+	 * @throws JSchException, SftpException, IOException
+	 */
 	void uploadBackPortal(String path, String file) throws JSchException, SftpException, IOException
 	{
 		String localFile = "~portal.xml";
@@ -2395,7 +2927,12 @@ class FlexTPSProxy
 		fd.close();
 		delete();
 		} 
+	
 	//this is the method that will be used to save a portal xml file locally
+	/**
+	 * This is the code that will save the portal file locally on the file system if the user chooses to do so
+	 * @see #fc
+	 */
 	void saveLocalportal()
 	{
 		fc = new JFileChooser ();
@@ -2458,6 +2995,9 @@ class FlexTPSProxy
 }
 
 //class that will be used to edit and write back the xml file to a file
+/**
+ * Class used to print the files into the xml format and save to a file 
+ */
 class FlexTPSCamera
 {
 	 public String ip = "";
@@ -2486,10 +3026,17 @@ class FlexTPSCamera
 	 public ProxyGUI gui;
 	 
 	 // Various Constructors
+	 /**
+	  * Constructor 
+	  */
 	 public FlexTPSCamera() {}
 	// public FlexTPSCamera(String ip) {this.ip = ip;}
 	 
 	 //is supposed to print those all to a file 
+	 /**
+	  * This is the method that is used to print the proxy file xml
+	  * @param ps this is used to pass in the information from the FlexTPSProxy that needs to be included into the file
+	  */
 	 public void print(PrintStream ps) 
 	 {
 		 ps.println();
@@ -2541,6 +3088,10 @@ class FlexTPSCamera
 	 }
 	 
 	 //method to print the proxy information in the portal xml file 
+	 /**
+	  * This is the method that is used to print the proxy information needed into the portal file 
+	  * @param ps this is used to pass in the information from the FlexTPSProxy that needs to be included into the file
+	  */
 	 public void printPortalproxy(PrintStream ps) 
 	 {
 		 ps.println();
@@ -2556,6 +3107,10 @@ class FlexTPSCamera
 	 }
 	 
 	 //method to print the stream information for the proxy xml file 
+	 /**
+	  * This is the method used to print the portal file in the correct format
+	  * @param ps is used to get the information needed from the FlexTPSProxy class so that the portal file is correct 
+	  */
 	 public void printPortalstream(PrintStream ps) 
 	 {
 		 ps.println();
